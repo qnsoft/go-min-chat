@@ -26,18 +26,28 @@ func checkError(err error) {
 
 var all_user = make(map[net.Conn]*Client)
 
-func main() {
-	var port string
-	flag.StringVar(&port, "port", "8080", "is port")
-	flag.Parse()
+type Server struct {
+	host string
+	port int
+}
 
-	addr := fmt.Sprintf("%s%s", "192.168.101.200:", port)
-	fmt.Println(addr)
+var S *Server
+
+func init() {
+	var host string
+	flag.StringVar(&host, "h", "192.168.101.200", "is port")
+	var port int
+	flag.IntVar(&port, "p", 8080, "is port")
+	flag.Parse()
+	S = &Server{host, port}
+}
+
+func main() {
+	addr := fmt.Sprintf("%s:%d", S.host, S.port)
 	listen, err := net.Listen("tcp", addr)
 	checkError(err)
 	defer listen.Close()
-
-	fmt.Println(all_user)
+	fmt.Println("connect success")
 	for {
 		new_conn, err := listen.Accept()
 		all_user[new_conn] = &Client{}
@@ -72,6 +82,10 @@ func sendConnMsg(conn net.Conn, ch chan []byte) {
 				all_user[conn].nick = name
 				all_user[conn].wait_pass = true
 				all_user[conn].auth = true
+				var s = fmt.Sprintf("login successfully!!!, welcome %s", name)
+				_, err := conn.Write([]byte(s))
+				checkError(err)
+				continue
 			}
 		} else { // 如果不是auth指令, 就判断是否auth过
 			if (all_user[conn].auth == false) {
@@ -87,8 +101,14 @@ func sendConnMsg(conn net.Conn, ch chan []byte) {
 					all_name.WriteString(v.nick)
 				}
 			}
-			fmt.Println("content_list1:", content_list, "sendmsg:", all_name.String())
-			_, err := conn.Write([]byte(all_name.String()))
+			var send_str string
+			if (strings.EqualFold(all_name.String(), "")) {
+				send_str = fmt.Sprintf("%s(*)", all_user[conn].nick)
+			} else {
+				send_str = fmt.Sprintf("%s %s(*)", all_name.String(), all_user[conn].nick)
+			}
+			fmt.Println("content_list1:", content_list, "sendmsg:", send_str)
+			_, err := conn.Write([]byte(send_str))
 			checkError(err)
 		} else {
 			fmt.Println("content_list2:", content_list, "sendmsg:", string(content))
