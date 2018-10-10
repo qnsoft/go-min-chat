@@ -7,6 +7,11 @@ import (
 	"sync"
 	"bufio"
 	"flag"
+	time2 "time"
+	"go-min-chat/protobuf/proto"
+	"github.com/golang/protobuf/proto"
+	"strings"
+	"go-min-chat/msg"
 )
 
 func checkError(err error) {
@@ -36,14 +41,41 @@ func main() {
 	go readFromStdio(ch)
 	go readFromConn(conn)
 	go sendMsg(conn, ch)
+	//go heartBeat(conn)
 	wg.Wait()
+}
+
+func heartBeat(conn net.Conn) {
+	time1 := time2.NewTicker(5 * time2.Second)
+	var content string
+	for {
+		select {
+		case <-time1.C:
+			content = "iamok"
+			_, err := conn.Write([]byte(content))
+			checkError(err)
+			fmt.Print(pre)
+		}
+	}
 }
 
 func readFromStdio(ch chan []byte) {
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		data, _, _ := reader.ReadLine()
-		ch <- data
+		data = []byte(strings.Trim(string(data), " "))
+		p1 := &protobuf.Content{}
+		data_str := string(data)
+		data_str_upper := strings.ToUpper(data_str)
+		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
+			p1.Id = msg.SHOWROOMS
+		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
+			param := strings.Split(data_str, " ")
+			p1.Id = msg.CREATEROOM
+			p1.Param = param[2]
+		}
+		d, _ := proto.Marshal(p1)
+		ch <- d
 	}
 }
 
@@ -63,6 +95,5 @@ func sendMsg(conn net.Conn, ch chan []byte) {
 		content, _ := <-ch
 		_, err := conn.Write(content)
 		checkError(err)
-		fmt.Print(pre)
 	}
 }

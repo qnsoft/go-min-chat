@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package protobuf;
+
+message Content
+{
+    int32     id = 1;
+    string    command = 2;
+    string    param = 3;
+}
