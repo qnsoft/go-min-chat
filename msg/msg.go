@@ -1,12 +1,12 @@
 package msg
 
 import (
-	"go-min-chat/room"
 	"go-min-chat/server/ser"
 	"fmt"
 	"go-min-chat/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"strings"
+	"go-min-chat/room"
 )
 
 const UNKNOW = 0
@@ -34,9 +34,9 @@ func doShowRooms(ret *string) {
 	rooms := MinChatSer.Rooms
 	for v, r := range rooms {
 		if (v == 0) {
-			innerRet = fmt.Sprintf("%d)%s", v+1, r.Name)
+			innerRet = fmt.Sprintf("%d)%s(%d)", v+1, r.Name, r.Id)
 		} else {
-			innerRet = fmt.Sprintf("%s\n%d)%s", innerRet, v+1, r.Name)
+			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v+1, r.Name, r.Id)
 		}
 	}
 	*ret = innerRet
@@ -44,14 +44,19 @@ func doShowRooms(ret *string) {
 
 func doCreateRooms(rcvContent *protobuf.Content, ret *string) {
 	MinChatSer := ser.GetMinChatSer()
+	var isExist = false
 	for _, v := range MinChatSer.Rooms { // 房间名字已经存在
 		if (strings.EqualFold(v.Name, rcvContent.Param)) {
 			*ret = fmt.Sprintf("%s room is existing", rcvContent.Param)
 			*ret = "OK"
+			isExist = true
 			goto Loop
 		}
 	}
-	MinChatSer.Rooms = append(MinChatSer.Rooms, room.BuildRoom(12, rcvContent.Param))
-	*ret = "OK"
 Loop:
+	if (!isExist) {
+		rootSing := room.GetRoom()
+		MinChatSer.Rooms = append(MinChatSer.Rooms, room.BuildRoom(int(room.GetRoomNo(rootSing)), rcvContent.Param))
+		*ret = "OK"
+	}
 }

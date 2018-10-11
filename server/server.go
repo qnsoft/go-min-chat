@@ -12,6 +12,7 @@ import (
 type Client struct {
 	nick      string
 	age       int
+	room_id   int
 	online    bool
 	auth      bool
 	wait_pass bool
@@ -61,7 +62,7 @@ func init() {
 	//os.Exit(1)
 
 	var host string
-	flag.StringVar(&host, "h", "192.168.101.160", "is port")
+	flag.StringVar(&host, "h", "192.168.101.201", "is port")
 	var port int
 	flag.IntVar(&port, "p", 8080, "is port")
 	flag.Parse()
