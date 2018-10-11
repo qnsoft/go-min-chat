@@ -7,11 +7,12 @@ import (
 	"sync"
 	"bufio"
 	"flag"
-	time2 "time"
 	"go-min-chat/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"strings"
 	"go-min-chat/msg"
+	"go-min-chat/cli"
+	"strconv"
 )
 
 func checkError(err error) {
@@ -21,20 +22,15 @@ func checkError(err error) {
 	}
 }
 
-var pre string
-
 func main() {
-	var port string
-	var host string
-	flag.StringVar(&port, "p", "8080", "port")
-	flag.StringVar(&host, "h", "127.0.0.1", "host")
+	cliSing := cli.GetCli()
+	flag.StringVar(&(cliSing.Port), "p", "8080", "port")
+	flag.StringVar(&(cliSing.Host), "h", "127.0.0.1", "host")
 	flag.Parse()
-
-	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", host, port))
+	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", cliSing.Host, cliSing.Port))
 	checkError(err)
 	defer conn.Close()
-	pre = fmt.Sprintf("%s:%s> ", host, port)
-	fmt.Print(pre)
+	fmt.Print(getPre())
 	var wg sync.WaitGroup
 	ch := make(chan []byte)
 	wg.Add(3)
@@ -45,19 +41,19 @@ func main() {
 	wg.Wait()
 }
 
-func heartBeat(conn net.Conn) {
-	time1 := time2.NewTicker(5 * time2.Second)
-	var content string
-	for {
-		select {
-		case <-time1.C:
-			content = "iamok"
-			_, err := conn.Write([]byte(content))
-			checkError(err)
-			fmt.Print(pre)
-		}
-	}
-}
+//func heartBeat(conn net.Conn) {
+//	time1 := time2.NewTicker(5 * time2.Second)
+//	var content string
+//	for {
+//		select {
+//		case <-time1.C:
+//			content = "iamok"
+//			_, err := conn.Write([]byte(content))
+//			checkError(err)
+//			fmt.Print(pre)
+//		}
+//	}
+//}
 
 func readFromStdio(ch chan []byte) {
 	for {
@@ -68,11 +64,20 @@ func readFromStdio(ch chan []byte) {
 		data_str := string(data)
 		data_str_upper := strings.ToUpper(data_str)
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
-			p1.Id = msg.SHOWROOMS
+			p1.Id = msg.RCV_SHOWROOMS
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
 			param := strings.Split(data_str, " ")
-			p1.Id = msg.CREATEROOM
+			if (len(param) < 3) {
+				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
+				fmt.Printf(getPre())
+				continue
+			}
+			p1.Id = msg.RCV_CREATEROOM
 			p1.Param = param[2]
+		} else {
+			fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
+			fmt.Printf(getPre())
+			continue
 		}
 		d, _ := proto.Marshal(p1)
 		ch <- d
@@ -81,12 +86,20 @@ func readFromStdio(ch chan []byte) {
 
 func readFromConn(conn net.Conn) {
 	for {
-		buf := make([]byte, 50)
+		buf := make([]byte, 500)
 		n, err := conn.Read(buf)
 		checkError(err)
-		fmt.Print(string(buf[:n]))
-		fmt.Println()
-		fmt.Print(pre)
+		backContent := &protobuf.BackContent{}
+		proto.Unmarshal(buf[:n], backContent)
+		if (backContent.Id == msg.SEND_CREATEROOM) { // 是对创建房间的确认信息
+			fmt.Println("是对创建房间的确认信息")
+			param_arr := strings.Split(backContent.Param, " ")
+			cli := cli.GetCli()
+			cli.RoomId, err = strconv.Atoi(param_arr[0])
+			cli.RoomName = param_arr[1]
+		}
+		fmt.Println(backContent.Param)
+		fmt.Print(getPre())
 	}
 }
 
@@ -96,4 +109,13 @@ func sendMsg(conn net.Conn, ch chan []byte) {
 		_, err := conn.Write(content)
 		checkError(err)
 	}
+}
+
+func getPre() string {
+	cliSing := cli.GetCli()
+	pre := fmt.Sprintf("%s:%s> ", cliSing.Host, cliSing.Port)
+	if (cliSing.RoomId != 0) {
+		pre = fmt.Sprintf("%s[%s(%d)] ", pre, cliSing.RoomName, cliSing.RoomId)
+	}
+	return pre
 }

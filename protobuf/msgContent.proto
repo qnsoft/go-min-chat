@@ -4,7 +4,14 @@ package protobuf;
 
 message Content
 {
-    int32     id = 1;
-    string    command = 2;
-    string    param = 3;
+   int32     id = 1;
+   string    command = 2;
+   string    param = 3;
+}
+
+message BackContent
+{
+   int32     id = 1;
+   int32     msqType = 2;
+   string    param = 3;
 }

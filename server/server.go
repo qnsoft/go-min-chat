@@ -7,16 +7,9 @@ import (
 	"flag"
 	"go-min-chat/msg"
 	"io"
+	"go-min-chat/user"
+	"go-min-chat/server/ser"
 )
-
-type Client struct {
-	nick      string
-	age       int
-	room_id   int
-	online    bool
-	auth      bool
-	wait_pass bool
-}
 
 func checkError(err error) {
 	if err != nil {
@@ -38,8 +31,6 @@ func ConnReadCheckError(err error, conn net.Conn) int {
 	return 1
 }
 
-var all_user = make(map[net.Conn]*Client)
-
 type Server struct {
 	host string
 	port int
@@ -48,19 +39,6 @@ type Server struct {
 var S *Server
 
 func init() {
-	//p1 := &protobuf.Content{
-	//	Id:      1,
-	//	Command: "CREATE ROOM",
-	//	Param:   "abc",
-	//}
-	//data, _ := proto.Marshal(p1);
-	//ioutil.WriteFile("./test.txt", data, os.ModePerm)
-	//newTest := &protobuf.Content{}
-	//err := proto.Unmarshal(data, newTest)
-	//checkError(err)
-	//fmt.Println(newTest.Param)
-	//os.Exit(1)
-
 	var host string
 	flag.StringVar(&host, "h", "192.168.101.201", "is port")
 	var port int
@@ -74,19 +52,19 @@ func main() {
 	listen, err := net.Listen("tcp", addr)
 	checkError(err)
 	defer listen.Close()
-	fmt.Println("connect success")
+	fmt.Println("Ready to accept connections")
 	for {
-		fmt.Println("-----");
-		new_conn, err := listen.Accept()
-		all_user[new_conn] = &Client{}
-		fmt.Println(new_conn.RemoteAddr())
+		newConn, err := listen.Accept()
+		ser.GetMinChatSer().AllUser[newConn] = user.User{}
+		fmt.Println(newConn.RemoteAddr())
 		checkError(err)
 		ch := make(chan []byte)
-		go recvConnMsg(new_conn, ch)
-		go sendConnMsg(new_conn, ch)
+		go recvConnMsg(newConn, ch)
+		go sendConnMsg(newConn, ch)
 	}
 }
 
+// 服务端接受消息
 func recvConnMsg(conn net.Conn, ch chan []byte) {
 	buf := make([]byte, 50)
 Loop:
@@ -104,59 +82,13 @@ Loop:
 	}
 }
 
+// 服务端发送消息
 func sendConnMsg(conn net.Conn, ch chan []byte) {
 	for {
-		fmt.Println("-----");
+		fmt.Println("-----")
 		content, _ := <-ch
 		var ret string
-		msg.DoMsg(content, &ret)
-		_, err := conn.Write([]byte(ret))
-		checkError(err)
+		msg.DoMsg(conn, content)
 		fmt.Println(ret)
-
-		//if (strings.HasPrefix(content_list, "auth")) {
-		//	if (all_user[conn].auth) {
-		//		conn.Write([]byte("do not auth, you already login"))
-		//		continue
-		//	} else {
-		//		name := string(content_list[5:])
-		//		all_user[conn].nick = name
-		//		all_user[conn].wait_pass = true
-		//		all_user[conn].auth = true
-		//		var s = fmt.Sprintf("login successfully!!!, welcome %s", name)
-		//		_, err := conn.Write([]byte(s))
-		//		checkError(err)
-		//		continue
-		//	}
-		//} else { // 如果不是auth指令, 就判断是否auth过
-		//	if (all_user[conn].auth == false) {
-		//		_, err := conn.Write([]byte("please auth"))
-		//		checkError(err)
-		//		continue
-		//	}
-		//}
-		//if (content_list == "list") {
-		//	var all_name bytes.Buffer
-		//	for k, v := range all_user {
-		//		if (k != conn) {
-		//			all_name.WriteString(v.nick)
-		//		}
-		//	}
-		//	var send_str string
-		//	if (strings.EqualFold(all_name.String(), "")) {
-		//		send_str = fmt.Sprintf("%s(*)", all_user[conn].nick)
-		//	} else {
-		//		send_str = fmt.Sprintf("%s %s(*)", all_name.String(), all_user[conn].nick)
-		//	}
-		//	fmt.Println("content_list1:", content_list, "sendmsg:", send_str)
-		//	_, err := conn.Write([]byte(send_str))
-		//	checkError(err)
-		//}
-		////else {
-		////	fmt.Println("content_list2:", content_list, "sendmsg:", string(content))
-		////	_, err := conn.Write(content)
-		////	checkError(err)
-		////}
-
 	}
 }
