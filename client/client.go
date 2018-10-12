@@ -63,10 +63,10 @@ func readFromStdio(ch chan []byte) {
 		p1 := &protobuf.Content{}
 		data_str := string(data)
 		data_str_upper := strings.ToUpper(data_str)
+		param := strings.Split(data_str, " ")
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
 			p1.Id = msg.RCV_SHOWROOMS
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
-			param := strings.Split(data_str, " ")
 			if (len(param) < 3) {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
 				fmt.Printf(getPre())
@@ -74,6 +74,9 @@ func readFromStdio(ch chan []byte) {
 			}
 			p1.Id = msg.RCV_CREATEROOM
 			p1.Param = param[2]
+		} else if (strings.HasPrefix(data_str_upper, "USE")) {
+			p1.Id = msg.RCV_USEROOM
+			p1.Param = param[1]
 		} else {
 			fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
 			fmt.Printf(getPre())
@@ -91,8 +94,7 @@ func readFromConn(conn net.Conn) {
 		checkError(err)
 		backContent := &protobuf.BackContent{}
 		proto.Unmarshal(buf[:n], backContent)
-		if (backContent.Id == msg.SEND_CREATEROOM) { // 是对创建房间的确认信息
-			fmt.Println("是对创建房间的确认信息")
+		if (backContent.Id == msg.SEND_USEROOM) {
 			param_arr := strings.Split(backContent.Param, " ")
 			cli := cli.GetCli()
 			cli.RoomId, err = strconv.Atoi(param_arr[0])

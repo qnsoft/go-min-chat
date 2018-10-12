@@ -8,15 +8,18 @@ import (
 	"strings"
 	"go-min-chat/room"
 	"net"
+	"go-min-chat/cli"
 )
 
 // server 接受信息格式
 const UNKNOW = 0
 const RCV_SHOWROOMS = 1
 const RCV_CREATEROOM = 2
+const RCV_USEROOM = 3
 
 // server 发送的消息格式
 const SEND_CREATEROOM = 2
+const SEND_USEROOM = 3
 
 const OK = "OK"
 
@@ -29,7 +32,10 @@ func DoMsg(conn net.Conn, msgContent []byte) {
 		doShowRooms(conn)
 	case RCV_CREATEROOM:
 		doCreateRooms(conn, rcvContent)
+	case RCV_USEROOM:
+		doUseRoom(conn, rcvContent)
 	}
+
 }
 
 func doShowRooms(conn net.Conn) {
@@ -63,7 +69,7 @@ Loop:
 		roomId := int(room.GetRoomNo(rootSing))
 		roomName := rcvContent.Param
 		// 把room添加到chatSer保存
-		MinChatSer.Rooms = append(MinChatSer.Rooms, room.BuildRoom(roomId, roomName))
+		ser.AddRooms(room.BuildRoom(roomId, roomName))
 
 		// 创建了当前用户的房间信息
 		user := ser.GetMinChatSer().AllUser[conn]
@@ -71,7 +77,20 @@ Loop:
 		user.RoomName = roomName
 
 		SendBackMessage(conn, 1, 1, "OK")
-		SendBackMessage(conn, SEND_CREATEROOM, 1, fmt.Sprintf("%d %s", roomId, roomName))
+		SendBackMessage(conn, 1, 1, "OK1")
+		//SendBackMessage(conn, SEND_CREATEROOM, 1, fmt.Sprintf("%d %s", roomId, roomName))
+	}
+}
+
+func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
+	if (cli.GetCli().RoomName == rcvContent.Param) { // 在当前房间
+		param := fmt.Sprintf("u are already in %s room", rcvContent.Param)
+		SendBackMessage(conn, 1, 1, param)
+	} else { // 不在当前房间
+		a := ser.GetMinChatSer().AllUser[conn]
+		a.RoomName = rcvContent.Param
+		SendBackMessage(conn, 1, 1, "OK")
+		SendBackMessage(conn, SEND_USEROOM, 1, fmt.Sprintf("%d %s", 1, rcvContent.Param))
 	}
 }
 
@@ -82,5 +101,6 @@ func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {
 		Param:   param,
 	}
 	data, _ := proto.Marshal(p1)
-	conn.Write(data)
+	n, err := conn.Write(data)
+	fmt.Println("data send leng:", n, err)
 }
