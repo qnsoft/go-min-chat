@@ -66,6 +66,9 @@ func readFromStdio(ch chan []byte) {
 		param := strings.Split(data_str, " ")
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
 			p1.Id = msg.RCV_SHOWROOMS
+		} else if (strings.HasPrefix(data_str_upper, "AUTH")) {
+			p1.Id = msg.RCV_AUTH
+			p1.ParamString = param[1]
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
 			if (len(param) < 3) {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
@@ -73,14 +76,21 @@ func readFromStdio(ch chan []byte) {
 				continue
 			}
 			p1.Id = msg.RCV_CREATEROOM
-			p1.Param = param[2]
+			p1.ParamString = param[2]
 		} else if (strings.HasPrefix(data_str_upper, "USE")) {
 			p1.Id = msg.RCV_USEROOM
-			p1.Param = param[1]
+			p1.ParamString = param[1]
 		} else {
-			fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
-			fmt.Printf(getPre())
-			continue
+			cliSing := cli.GetCli()
+			if (cliSing.RoomId != 0) { // 说明进入房间了
+				p1.Id = msg.RCV_GROUP_MSG
+				p1.ParamId = int32(cliSing.RoomId)
+				p1.ParamString = param[0]
+			} else {
+				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
+				fmt.Printf(getPre())
+				continue
+			}
 		}
 		d, _ := proto.Marshal(p1)
 		ch <- d

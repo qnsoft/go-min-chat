@@ -1,8 +1,11 @@
 package user
 
-import "net"
+import (
+	"net"
+)
 
 type User struct {
+	Uid      int
 	Nick     string
 	Age      int
 	RoomId   int
@@ -11,4 +14,13 @@ type User struct {
 	IsAuth   bool
 	WaitPass bool
 	Conn     *net.Conn
+}
+
+func BuildUser(uid int, nick string, age int) *User {
+	var user = &User{}
+	user.Uid = uid
+	user.Nick = nick
+	user.Age = age
+
+	return user
 }

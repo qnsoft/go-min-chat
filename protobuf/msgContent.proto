@@ -6,7 +6,8 @@ message Content
 {
    int32     id = 1;
    string    command = 2;
-   string    param = 3;
+   int32     param_id = 3;
+   string    param_string = 4;
 }
 
 message BackContent

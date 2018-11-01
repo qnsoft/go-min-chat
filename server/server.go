@@ -7,8 +7,6 @@ import (
 	"flag"
 	"go-min-chat/msg"
 	"io"
-	"go-min-chat/user"
-	"go-min-chat/server/ser"
 )
 
 func checkError(err error) {
@@ -40,7 +38,7 @@ var S *Server
 
 func init() {
 	var host string
-	flag.StringVar(&host, "h", "192.168.101.201", "is port")
+	flag.StringVar(&host, "h", "127.0.0.1", "is port")
 	var port int
 	flag.IntVar(&port, "p", 8080, "is port")
 	flag.Parse()
@@ -55,7 +53,6 @@ func main() {
 	fmt.Println("Ready to accept connections")
 	for {
 		newConn, err := listen.Accept()
-		ser.GetMinChatSer().AllUser[newConn] = user.User{}
 		fmt.Println(newConn.RemoteAddr())
 		checkError(err)
 		ch := make(chan []byte)
