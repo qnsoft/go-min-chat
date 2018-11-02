@@ -13,13 +13,27 @@ message Content
 message BackContent
 {
    int32     id = 1;
-   Auth      auth = 2;
+   int32     code = 2;
+   Auth      auth = 3;
+   ShowRoom  showroom = 4;
 }
 
 message Auth
 {
-    bool    isOk = 1;
+    bool     isOk = 1;
     Userinfo useInfo = 2;
+}
+
+message ShowRoom
+{
+    int32 count = 1;
+    string roomsAndIds = 2;
+}
+
+message Room
+{
+    int32  roomId = 1;
+    string roomName = 2;
 }
 
 message Userinfo

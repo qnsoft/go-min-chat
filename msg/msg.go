@@ -116,6 +116,7 @@ func doShowRooms(conn net.Conn) {
 	MinChatSer := ser.GetMinChatSer()
 	var innerRet string = "1)"
 	rooms := MinChatSer.AllRoomKeyRoomId
+
 	for v, r := range rooms {
 		if (v == 0) {
 			innerRet = fmt.Sprintf("%d)%s(%d)", v+1, r.Name, r.Id)
@@ -123,7 +124,14 @@ func doShowRooms(conn net.Conn) {
 			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v+1, r.Name, r.Id)
 		}
 	}
-	SendBackMessage(conn, 1, 1, innerRet)
+	p1 := &protobuf.BackContent{}
+	p1.Id = RCV_SHOW_ROOMS
+	sR := &protobuf.ShowRoom{}
+	sR.Count = int32(len(rooms))
+	sR.RoomsAndIds = innerRet
+	p1.Showroom = sR
+	data, _ := proto.Marshal(p1)
+	SendMessage(conn, data)
 }
 
 func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {

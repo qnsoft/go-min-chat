@@ -112,6 +112,9 @@ func readFromConn(conn net.Conn) {
 		case msg.RCV_AUTH:
 			doAuth(backContent)
 			break
+		case msg.RCV_SHOW_ROOMS:
+			doShowRoom(backContent)
+			break
 		}
 		//if (backContent.Id == msg.RCV_USE_ROOM) {
 		//	param_arr := strings.Split(backContent.Param, " ")
@@ -131,7 +134,10 @@ func doAuth(backContent *protobuf.BackContent) {
 		cli.Nick = backContent.Auth.UseInfo.Nick
 		cli.Uid = backContent.Auth.UseInfo.Uid
 	}
-	fmt.Println(cli)
+}
+
+func doShowRoom(backContent *protobuf.BackContent) {
+	fmt.Println(backContent.Showroom.RoomsAndIds)
 }
 
 func sendMsg(conn net.Conn, ch chan []byte) {
