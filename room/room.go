@@ -11,6 +11,10 @@ type Room struct {
 
 func BuildRoom(id int, name string) *Room {
 	var room *Room
-	room = &Room{id, name, 0, nil}
+	room = &Room{}
+	room.Id = id
+	room.Name = name
+	room.AllUser = make(map[int]*user.User)
+
 	return room
 }

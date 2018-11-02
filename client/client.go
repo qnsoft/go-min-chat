@@ -66,7 +66,7 @@ func readFromStdio(ch chan []byte) {
 		data_str_upper := strings.ToUpper(data_str)
 		param := strings.Split(data_str, " ")
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
-			p1.Id = msg.RCV_SHOWROOMS
+			p1.Id = msg.RCV_SHOW_ROOMS
 		} else if (strings.HasPrefix(data_str_upper, "AUTH")) {
 			p1.Id = msg.RCV_AUTH
 			p1.ParamString = param[1]
@@ -76,10 +76,12 @@ func readFromStdio(ch chan []byte) {
 				fmt.Printf(getPre())
 				continue
 			}
-			p1.Id = msg.RCV_CREATEROOM
+			p1.Id = msg.RCV_CREATE_ROOM
 			p1.ParamString = param[2]
+		} else if (strings.HasPrefix(data_str_upper, "USER LIST")) {
+			p1.Id = msg.RCV_USER_LIST
 		} else if (strings.HasPrefix(data_str_upper, "USE")) {
-			p1.Id = msg.RCV_USEROOM
+			p1.Id = msg.RCV_USE_ROOM
 			p1.ParamString = param[1]
 		} else {
 			cliSing := cli.GetCli()

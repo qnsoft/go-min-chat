@@ -8,10 +8,11 @@ import (
 )
 
 type MinChatSer struct {
-	Host          string
-	Port          int
-	AllRoom       map[int]*room.Room
-	AllUser       map[net.Conn]*user.User
+	Host               string
+	Port               int
+	AllRoomKeyRoomId   map[int]*room.Room
+	AllRoomKeyRoomName map[string]*room.Room
+	AllUser            map[net.Conn]*user.User
 }
 
 var ins *MinChatSer
@@ -21,12 +22,14 @@ func GetMinChatSer() *MinChatSer {
 	once.Do(func() {
 		ins = &MinChatSer{}
 		ins.AllUser = make(map[net.Conn]*user.User)
-		ins.AllRoom = make(map[int]*room.Room)
+		ins.AllRoomKeyRoomId = make(map[int]*room.Room)
+		ins.AllRoomKeyRoomName = make(map[string]*room.Room)
 	})
 	return ins
 }
 
 func AddRooms(room *room.Room) {
 	singleMinChatSer := GetMinChatSer()
-	singleMinChatSer.AllRoom[room.Id] = room
+	singleMinChatSer.AllRoomKeyRoomId[room.Id] = room
+	singleMinChatSer.AllRoomKeyRoomName[room.Name] = room
 }
