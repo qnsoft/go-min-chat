@@ -7,6 +7,8 @@ import (
 	"flag"
 	"go-min-chat/msg"
 	"io"
+	"go-min-chat/user"
+	"go-min-chat/server/ser"
 )
 
 func checkError(err error) {
@@ -51,8 +53,13 @@ func main() {
 	checkError(err)
 	defer listen.Close()
 	fmt.Println("Ready to accept connections")
+	MinChatSer := ser.GetMinChatSer()
+	var u *user.User
 	for {
 		newConn, err := listen.Accept()
+		// 连接上了，就把这个连接赋予一个未登录的用户
+		u = user.BuildUser(0, "", 0, false)
+		MinChatSer.AllUser[newConn] = u
 		fmt.Println(newConn.RemoteAddr())
 		checkError(err)
 		ch := make(chan []byte)

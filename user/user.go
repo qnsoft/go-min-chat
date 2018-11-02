@@ -16,11 +16,12 @@ type User struct {
 	Conn     *net.Conn
 }
 
-func BuildUser(uid int, nick string, age int) *User {
+func BuildUser(uid int, nick string, age int, isAuth bool) *User {
 	var user = &User{}
 	user.Uid = uid
 	user.Nick = nick
 	user.Age = age
+	user.IsAuth = isAuth
 
 	return user
 }

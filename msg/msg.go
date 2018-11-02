@@ -9,7 +9,6 @@ import (
 	"go-min-chat/room"
 	"net"
 	"go-min-chat/cli"
-	"go-min-chat/user"
 )
 
 // server 接受信息格式
@@ -34,31 +33,38 @@ func DoMsg(conn net.Conn, msgContent []byte) {
 	switch rcvContent.Id {
 	case RCV_AUTH:
 		doAuth(conn, rcvContent)
+		break
 	case RCV_SHOWROOMS:
 		doShowRooms(conn)
+		break
 	case RCV_CREATEROOM:
 		doCreateRooms(conn, rcvContent)
+		break
 	case RCV_USEROOM:
 		doUseRoom(conn, rcvContent)
+		break
 	case RCV_GROUP_MSG:
 		doGroupMsg(conn, rcvContent)
-		//p1.Id = msg.RCV_GROUP_MSG
-		//p1.ParamId = int32(cliSing.RoomId)
-		//p1.ParamString = param[0]
+		break
 	}
-
 }
 
 func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 	MinChatSer := ser.GetMinChatSer()
-	var u *user.User
+	u := MinChatSer.AllUser[conn]
+
 	if (strings.EqualFold(rcvContent.ParamString, "thomas")) {
-		u = user.BuildUser(1, rcvContent.ParamString, 20)
+		u.Uid = 1;
+		u.IsAuth = true
+		u.Age = 19
+		u.Nick = rcvContent.ParamString
 	}
 	if (strings.EqualFold(rcvContent.ParamString, "wang")) {
-		u = user.BuildUser(2, rcvContent.ParamString, 19)
+		u.Uid = 1;
+		u.IsAuth = true
+		u.Age = 19
+		u.Nick = rcvContent.ParamString
 	}
-	MinChatSer.AllUser[conn] = u
 	SendBackMessage(conn, 1, 1, "ok")
 }
 
@@ -89,6 +95,12 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 	}
 Loop:
 	if (isExist == false) { // 不存在就创建
+		// 创建了当前用户的房间信息
+		user := MinChatSer.AllUser[conn]
+		if (!user.IsAuth) { // 没有登录是不能创建房间的
+			SendBackMessage(conn, 1, 1, "please auth first")
+			return
+		}
 		rootSing := room.GetRoom()
 		roomId := int(room.GetRoomNo(rootSing))
 		roomName := rcvContent.ParamString
@@ -96,11 +108,7 @@ Loop:
 		// 把room添加到chatSer保存
 		ser.AddRooms(newRome)
 
-		// 创建了当前用户的房间信息
-		user := MinChatSer.AllUser[conn]
-		newRome.CreateUid = int(user.Uid)
-		//user.RoomId = roomId
-		//user.RoomName = roomName
+		newRome.CreateUid = user.Uid
 		SendBackMessage(conn, 1, 1, "OK")
 		//SendBackMessage(conn, SEND_CREATEROOM, 1, fmt.Sprintf("%d %s", roomId, roomName))
 	}

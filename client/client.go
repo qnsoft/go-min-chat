@@ -13,6 +13,7 @@ import (
 	"go-min-chat/msg"
 	"go-min-chat/cli"
 	"strconv"
+	"github.com/xcltapestry/xclpkg/clcolor"
 )
 
 func checkError(err error) {
@@ -110,7 +111,7 @@ func readFromConn(conn net.Conn) {
 			cli.RoomId, err = strconv.Atoi(param_arr[0])
 			cli.RoomName = param_arr[1]
 		}
-		fmt.Println(backContent.Param)
+		fmt.Println(clcolor.Red(backContent.Param));
 		fmt.Print(getPre())
 	}
 }
