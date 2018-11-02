@@ -13,6 +13,19 @@ message Content
 message BackContent
 {
    int32     id = 1;
-   int32     msqType = 2;
-   string    param = 3;
+   Auth      auth = 2;
+}
+
+message Auth
+{
+    bool    isOk = 1;
+    Userinfo useInfo = 2;
+}
+
+message Userinfo
+{
+    string nick = 1;
+    int32 uid = 2;
+    int32 roomId = 3;
+    string roomName = 4;
 }

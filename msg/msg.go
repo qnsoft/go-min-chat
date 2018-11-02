@@ -21,8 +21,8 @@ const RCV_GROUP_MSG = 5
 const RCV_USER_LIST = 6
 
 // server 发送的消息格式
-const SEND_CREATEROOM = 2
-const SEND_USEROOM = 3
+//const SEND_CREATEROOM = 2
+//const SEND_USEROOM = 3
 
 const OK = "OK"
 
@@ -60,28 +60,56 @@ func doUserList(conn net.Conn) {
 	fmt.Println(allUser)
 	var allUserStr string
 	for _, v := range allUser {
-		allUserStr += v.Nick + "\n"
+		if (u == v) { // 如果是自己就加个*
+			allUserStr += v.Nick + "(*)\n"
+		} else {
+			allUserStr += v.Nick + "\n"
+		}
 	}
-	SendBackMessage(conn, 1, 1, allUserStr)
+	SendBackMessage(conn, 1, 1, strings.TrimSuffix(allUserStr, "\n"))
 }
 
 func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 	MinChatSer := ser.GetMinChatSer()
 	u := MinChatSer.AllUser[conn]
-
+	p1 := &protobuf.BackContent{}
+	p1.Id = RCV_AUTH
 	if (strings.EqualFold(rcvContent.ParamString, "thomas")) {
+		// 设置本地的
 		u.Uid = 1;
 		u.IsAuth = true
 		u.Age = 19
 		u.Nick = rcvContent.ParamString
+		// 组装数据给客户端返回
+		userinfo := &protobuf.Userinfo{}
+		userinfo.Nick = rcvContent.ParamString
+		userinfo.Uid = int32(u.Uid)
+
+		auth := &protobuf.Auth{}
+		auth.IsOk = true
+		auth.UseInfo = userinfo
+
+		p1.Auth = auth
+
 	}
 	if (strings.EqualFold(rcvContent.ParamString, "wang")) {
 		u.Uid = 1;
 		u.IsAuth = true
 		u.Age = 19
 		u.Nick = rcvContent.ParamString
+
+		userinfo := &protobuf.Userinfo{}
+		userinfo.Nick = rcvContent.ParamString
+		userinfo.Uid = int32(u.Uid)
+
+		auth := &protobuf.Auth{}
+		auth.IsOk = true
+		auth.UseInfo = userinfo
+
+		p1.Auth = auth
 	}
-	SendBackMessage(conn, 1, 1, "ok")
+	data, _ := proto.Marshal(p1)
+	SendMessage(conn, data);
 }
 
 func doShowRooms(conn net.Conn) {
@@ -136,7 +164,7 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 			r.AllUser[user.Uid] = user
 			//a.Uid // 用户id
 			SendBackMessage(conn, 1, 1, "OK")
-			SendBackMessage(conn, SEND_USEROOM, 1, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
+			SendBackMessage(conn, RCV_USE_ROOM, 1, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
 		}
 	} else { // 不存在
 		SendBackMessage(conn, 1, 1, "room "+rcvContent.ParamString+" is not found")
@@ -160,12 +188,13 @@ func doGroupMsg(conn net.Conn, rcvContent *protobuf.Content) {
 }
 
 func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {
-	p1 := &protobuf.BackContent{
-		Id:      id,
-		MsqType: msgType,
-		Param:   param,
-	}
+	p1 := &protobuf.BackContent{Id: id,}
 	data, _ := proto.Marshal(p1)
+	n, err := conn.Write(data)
+	fmt.Println("data send leng:", n, err)
+}
+
+func SendMessage(conn net.Conn, data []byte) {
 	n, err := conn.Write(data)
 	fmt.Println("data send leng:", n, err)
 }

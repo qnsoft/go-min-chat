@@ -7,9 +7,11 @@ import (
 type Cli struct {
 	RoomId   int    // 当前进入的roomId
 	RoomName string // 当前进入的roomName
-
-	Host string
-	Port string
+	IsAuth   bool
+	Nick     string
+	Uid      int32
+	Host     string
+	Port     string
 }
 
 var ins *Cli

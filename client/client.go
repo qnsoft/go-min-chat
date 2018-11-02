@@ -12,8 +12,6 @@ import (
 	"strings"
 	"go-min-chat/msg"
 	"go-min-chat/cli"
-	"strconv"
-	"github.com/xcltapestry/xclpkg/clcolor"
 )
 
 func checkError(err error) {
@@ -107,15 +105,33 @@ func readFromConn(conn net.Conn) {
 		checkError(err)
 		backContent := &protobuf.BackContent{}
 		proto.Unmarshal(buf[:n], backContent)
-		if (backContent.Id == msg.SEND_USEROOM) {
-			param_arr := strings.Split(backContent.Param, " ")
-			cli := cli.GetCli()
-			cli.RoomId, err = strconv.Atoi(param_arr[0])
-			cli.RoomName = param_arr[1]
+		switch backContent.Id {
+		case msg.RCV_USE_ROOM:
+			//doMsg()
+			break
+		case msg.RCV_AUTH:
+			doAuth(backContent)
+			break
 		}
-		fmt.Println(clcolor.Red(backContent.Param));
+		//if (backContent.Id == msg.RCV_USE_ROOM) {
+		//	param_arr := strings.Split(backContent.Param, " ")
+		//	cli := cli.GetCli()
+		//	cli.RoomId, err = strconv.Atoi(param_arr[0])
+		//	cli.RoomName = param_arr[1]
+		//}
+		//fmt.Println(clcolor.Red(backContent.Param));
 		fmt.Print(getPre())
 	}
+}
+
+func doAuth(backContent *protobuf.BackContent) {
+	cli := cli.GetCli()
+	cli.IsAuth = backContent.Auth.IsOk
+	if (backContent.Auth.IsOk) {
+		cli.Nick = backContent.Auth.UseInfo.Nick
+		cli.Uid = backContent.Auth.UseInfo.Uid
+	}
+	fmt.Println(cli)
 }
 
 func sendMsg(conn net.Conn, ch chan []byte) {
