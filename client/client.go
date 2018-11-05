@@ -84,9 +84,12 @@ func readFromStdio(ch chan []byte) {
 		} else {
 			cliSing := cli.GetCli()
 			if (cliSing.RoomId != 0) { // 说明进入房间了
+				p1 := &protobuf.BackContent{}
 				p1.Id = msg.RCV_GROUP_MSG
-				p1.ParamId = int32(cliSing.RoomId)
-				p1.ParamString = param[0]
+				groupMsg := &protobuf.GroupMsg{}
+				groupMsg.RoomId = int32(cliSing.RoomId)
+				groupMsg.Content = param[0]
+				p1.Groupmsg = groupMsg
 			} else {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
 				fmt.Printf(getPre())
@@ -135,11 +138,11 @@ func doSuccessFail(backContent *protobuf.BackContent) {
 }
 
 func doAuth(backContent *protobuf.BackContent) {
-	cli := cli.GetCli()
-	cli.IsAuth = backContent.Auth.IsOk
+	cli1 := cli.GetCli()
+	cli1.IsAuth = backContent.Auth.IsOk
 	if (backContent.Auth.IsOk) { // 登录成功
-		cli.Nick = backContent.Auth.UseInfo.Nick
-		cli.Uid = backContent.Auth.UseInfo.Uid
+		cli1.Nick = backContent.Auth.UseInfo.Nick
+		cli1.Uid = backContent.Auth.UseInfo.Uid
 	} else { // 登录失败 or 需要去登录
 		fmt.Println("请先登录")
 	}

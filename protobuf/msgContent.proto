@@ -17,12 +17,19 @@ message BackContent
    string    msg = 3;
    Auth      auth = 4;
    ShowRoom  showroom = 5;
+   GroupMsg  groupmsg = 6;
 }
 
 message Auth
 {
     bool     isOk = 1;
     Userinfo useInfo = 2;
+}
+
+message GroupMsg
+{
+    int32 roomId = 1;
+    string content = 2;
 }
 
 message ShowRoom
