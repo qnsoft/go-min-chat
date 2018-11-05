@@ -19,6 +19,7 @@ const RCV_CREATE_ROOM = 3
 const RCV_USE_ROOM = 4
 const RCV_GROUP_MSG = 5
 const RCV_USER_LIST = 6
+const RCV_SUCCESS_FAIL = 7
 
 // server 发送的消息格式
 //const SEND_CREATEROOM = 2
@@ -144,7 +145,13 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 		// 创建了当前用户的房间信息
 		user := MinChatSer.AllUser[conn]
 		if (!user.IsAuth) { // 没有登录是不能创建房间的
-			SendBackMessage(conn, 1, 1, "please auth first")
+			p1 := &protobuf.BackContent{}
+			p1.Id = RCV_AUTH
+			auth := &protobuf.Auth{}
+			auth.IsOk = false
+			p1.Auth = auth
+			data, _ := proto.Marshal(p1)
+			SendMessage(conn, data)
 			return
 		}
 		rootSing := room.GetRoom()
@@ -154,8 +161,12 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 		newRome.CreateUid = user.Uid
 		// 把room添加到chatSer保存
 		ser.AddRooms(newRome)
-		SendBackMessage(conn, 1, 1, "OK")
-		//SendBackMessage(conn, SEND_CREATEROOM, 1, fmt.Sprintf("%d %s", roomId, roomName))
+		//SendBackMessage(conn, 1, 1, "OK")
+		p2 := &protobuf.BackContent{}
+		p2.Id = RCV_SUCCESS_FAIL
+		p2.Msg = "OK"
+		data2, _ := proto.Marshal(p2)
+		SendMessage(conn, data2)
 	}
 }
 

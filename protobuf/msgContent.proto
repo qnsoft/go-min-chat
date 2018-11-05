@@ -14,8 +14,9 @@ message BackContent
 {
    int32     id = 1;
    int32     code = 2;
-   Auth      auth = 3;
-   ShowRoom  showroom = 4;
+   string    msg = 3;
+   Auth      auth = 4;
+   ShowRoom  showroom = 5;
 }
 
 message Auth

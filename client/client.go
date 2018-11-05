@@ -106,6 +106,9 @@ func readFromConn(conn net.Conn) {
 		backContent := &protobuf.BackContent{}
 		proto.Unmarshal(buf[:n], backContent)
 		switch backContent.Id {
+		case msg.RCV_SUCCESS_FAIL:
+			doSuccessFail(backContent)
+			break
 		case msg.RCV_USE_ROOM:
 			//doMsg()
 			break
@@ -127,12 +130,18 @@ func readFromConn(conn net.Conn) {
 	}
 }
 
+func doSuccessFail(backContent *protobuf.BackContent) {
+	fmt.Println(backContent.Msg)
+}
+
 func doAuth(backContent *protobuf.BackContent) {
 	cli := cli.GetCli()
 	cli.IsAuth = backContent.Auth.IsOk
-	if (backContent.Auth.IsOk) {
+	if (backContent.Auth.IsOk) { // 登录成功
 		cli.Nick = backContent.Auth.UseInfo.Nick
 		cli.Uid = backContent.Auth.UseInfo.Uid
+	} else { // 登录失败 or 需要去登录
+		fmt.Println("请先登录")
 	}
 }
 
