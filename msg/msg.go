@@ -118,18 +118,19 @@ func doShowRooms(conn net.Conn) {
 	rooms := MinChatSer.AllRoomKeyRoomId
 	var innerRet string
 	for v, r := range rooms {
-		fmt.Println("v === ", v)
 		if (v == 1) {
 			innerRet = fmt.Sprintf("%d)%s(%d)", v, r.Name, r.Id)
 		} else {
 			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v, r.Name, r.Id)
+		}
+		if (r.Id == MinChatSer.AllUser[conn].RoomId) {
+			innerRet += "*"
 		}
 	}
 	p1 := &protobuf.BackContent{}
 	p1.Id = RCV_SHOW_ROOMS
 	sR := &protobuf.ShowRoom{}
 	sR.Count = int32(len(rooms))
-	fmt.Println(innerRet)
 	sR.RoomsAndIds = innerRet
 	p1.Showroom = sR
 	data, _ := proto.Marshal(p1)
@@ -141,11 +142,7 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 	all_room := MinChatSer.AllRoomKeyRoomName
 	if exist_room, ok := all_room[rcvContent.ParamString]; ok { // 存在房间了
 		param := fmt.Sprintf("%s room is existing", exist_room.Name)
-		p1 := &protobuf.BackContent{}
-		p1.Id = RCV_SUCCESS_FAIL
-		p1.Msg = param
-		data, _ := proto.Marshal(p1)
-		SendMessage(conn, data)
+		SendSuccessFailMessage(conn, param)
 	} else { // 房间不存在
 		// 创建了当前用户的房间信息
 		user := MinChatSer.AllUser[conn]
@@ -166,11 +163,7 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 		newRome.CreateUid = user.Uid
 		// 把room添加到chatSer保存
 		ser.AddRooms(newRome)
-		p2 := &protobuf.BackContent{}
-		p2.Id = RCV_SUCCESS_FAIL
-		p2.Msg = "OK"
-		data2, _ := proto.Marshal(p2)
-		SendMessage(conn, data2)
+		SendSuccessFailMessage(conn, "OK")
 	}
 }
 
@@ -179,11 +172,7 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 	user := MinChatSer.AllUser[conn]
 	if r, ok := MinChatSer.AllRoomKeyRoomName[rcvContent.ParamString]; ok {
 		if (r.Id == user.RoomId) { // 在当前房间
-			p2 := &protobuf.BackContent{}
-			p2.Id = RCV_SUCCESS_FAIL
-			p2.Msg = fmt.Sprintf("you are already in %s room", rcvContent.ParamString)
-			data2, _ := proto.Marshal(p2)
-			SendMessage(conn, data2)
+			SendSuccessFailMessage(conn, fmt.Sprintf("you are already in %s room", rcvContent.ParamString))
 		} else { // 不在当前房间
 			user.RoomName = r.Name
 			user.RoomId = r.Id
