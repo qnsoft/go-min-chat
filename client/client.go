@@ -166,8 +166,7 @@ func doUserList(backContent *protobuf.BackContent) {
 }
 
 func doGroupMsg(backContent *protobuf.BackContent) {
-	fmt.Println(backContent.Groupmsg.RoomId)
-	fmt.Println(backContent.Groupmsg.Content)
+	fmt.Printf("%s: %s\n", backContent.Groupmsg.Nick, backContent.Groupmsg.Content)
 }
 
 func sendMsg(conn net.Conn, ch chan []byte) {

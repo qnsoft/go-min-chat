@@ -30,7 +30,9 @@ message Auth
 message GroupMsg
 {
     int32 roomId = 1;
-    string content = 2;
+    int32 uid = 2;
+    string nick = 3;
+    string content = 4;
 }
 
 message ShowRoom

@@ -220,7 +220,10 @@ func doGroupMsg(conn net.Conn, rcvContent *protobuf.Content) {
 	p1.Id = RCV_GROUP_MSG
 	groupMsg := &protobuf.GroupMsg{}
 	groupMsg.Content = rcvContent.ParamString
+	groupMsg.Uid = int32(user.Uid)
+	groupMsg.Nick = user.Nick
 	p1.Groupmsg = groupMsg
+
 	data, _ := proto.Marshal(p1)
 	for _, v := range Room.AllUser {
 		fmt.Println(v)
