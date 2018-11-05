@@ -81,6 +81,7 @@ func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 		u.IsAuth = true
 		u.Age = 19
 		u.Nick = rcvContent.ParamString
+		u.Conn = conn
 		// 组装数据给客户端返回
 		userinfo := &protobuf.Userinfo{}
 		userinfo.Nick = rcvContent.ParamString
@@ -98,6 +99,7 @@ func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 		u.IsAuth = true
 		u.Age = 20
 		u.Nick = rcvContent.ParamString
+		u.Conn = conn
 
 		userinfo := &protobuf.Userinfo{}
 		userinfo.Nick = rcvContent.ParamString
@@ -211,17 +213,19 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 
 func doGroupMsg(conn net.Conn, rcvContent *protobuf.Content) {
 	fmt.Println("group msg:", rcvContent.ParamString)
-	//room := ser.GetMinChatSer().AllRoom[int(rcvContent.ParamId)]
-
-	//if (cli.GetCli().RoomName == rcvContent.ParamString) { // 在当前房间
-	//	param := fmt.Sprintf("u are already in %s room", rcvContent.ParamString)
-	//	SendBackMessage(conn, 1, 1, param)
-	//} else { // 不在当前房间
-	//	a := ser.GetMinChatSer().AllUser[conn]
-	//	a.RoomName = rcvContent.ParamString
-	//	SendBackMessage(conn, 1, 1, "OK")
-	//	SendBackMessage(conn, SEND_USEROOM, 1, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
-	//}
+	MinChatSer := ser.GetMinChatSer()
+	user := MinChatSer.AllUser[conn] // 当前这个用户
+	Room := MinChatSer.AllRoomKeyRoomId[user.RoomId]
+	p1 := &protobuf.BackContent{}
+	p1.Id = RCV_GROUP_MSG
+	groupMsg := &protobuf.GroupMsg{}
+	groupMsg.Content = rcvContent.ParamString
+	p1.Groupmsg = groupMsg
+	data, _ := proto.Marshal(p1)
+	for _, v := range Room.AllUser {
+		fmt.Println(v)
+		SendMessage(v.Conn, data)
+	}
 }
 
 func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {

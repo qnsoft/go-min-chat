@@ -13,7 +13,7 @@ type User struct {
 	Online   bool
 	IsAuth   bool
 	WaitPass bool
-	Conn     *net.Conn
+	Conn     net.Conn
 }
 
 func BuildUser(uid int, nick string, age int, isAuth bool) *User {

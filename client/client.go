@@ -84,12 +84,8 @@ func readFromStdio(ch chan []byte) {
 		} else {
 			cliSing := cli.GetCli()
 			if (cliSing.RoomId != 0) { // 说明进入房间了
-				p1 := &protobuf.BackContent{}
 				p1.Id = msg.RCV_GROUP_MSG
-				groupMsg := &protobuf.GroupMsg{}
-				groupMsg.RoomId = int32(cliSing.RoomId)
-				groupMsg.Content = param[0]
-				p1.Groupmsg = groupMsg
+				p1.ParamString = param[0]
 			} else {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
 				fmt.Printf(getPre())
@@ -170,8 +166,8 @@ func doUserList(backContent *protobuf.BackContent) {
 }
 
 func doGroupMsg(backContent *protobuf.BackContent) {
-
-	fmt.Println(backContent.Showroom.RoomsAndIds)
+	fmt.Println(backContent.Groupmsg.RoomId)
+	fmt.Println(backContent.Groupmsg.Content)
 }
 
 func sendMsg(conn net.Conn, ch chan []byte) {
