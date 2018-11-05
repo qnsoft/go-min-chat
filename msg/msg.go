@@ -67,7 +67,7 @@ func doUserList(conn net.Conn) {
 			allUserStr += v.Nick + "\n"
 		}
 	}
-	SendBackMessage(conn, 1, 1, strings.TrimSuffix(allUserStr, "\n"))
+	SendSuccessFailMessage(conn, strings.TrimSuffix(allUserStr, "\n"))
 }
 
 func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
@@ -115,20 +115,21 @@ func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 
 func doShowRooms(conn net.Conn) {
 	MinChatSer := ser.GetMinChatSer()
-	var innerRet string = "1)"
 	rooms := MinChatSer.AllRoomKeyRoomId
-
+	var innerRet string
 	for v, r := range rooms {
-		if (v == 0) {
-			innerRet = fmt.Sprintf("%d)%s(%d)", v+1, r.Name, r.Id)
+		fmt.Println("v === ", v)
+		if (v == 1) {
+			innerRet = fmt.Sprintf("%d)%s(%d)", v, r.Name, r.Id)
 		} else {
-			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v+1, r.Name, r.Id)
+			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v, r.Name, r.Id)
 		}
 	}
 	p1 := &protobuf.BackContent{}
 	p1.Id = RCV_SHOW_ROOMS
 	sR := &protobuf.ShowRoom{}
 	sR.Count = int32(len(rooms))
+	fmt.Println(innerRet)
 	sR.RoomsAndIds = innerRet
 	p1.Showroom = sR
 	data, _ := proto.Marshal(p1)
@@ -140,7 +141,11 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 	all_room := MinChatSer.AllRoomKeyRoomName
 	if exist_room, ok := all_room[rcvContent.ParamString]; ok { // 存在房间了
 		param := fmt.Sprintf("%s room is existing", exist_room.Name)
-		SendBackMessage(conn, 1, 1, param)
+		p1 := &protobuf.BackContent{}
+		p1.Id = RCV_SUCCESS_FAIL
+		p1.Msg = param
+		data, _ := proto.Marshal(p1)
+		SendMessage(conn, data)
 	} else { // 房间不存在
 		// 创建了当前用户的房间信息
 		user := MinChatSer.AllUser[conn]
@@ -161,7 +166,6 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 		newRome.CreateUid = user.Uid
 		// 把room添加到chatSer保存
 		ser.AddRooms(newRome)
-		//SendBackMessage(conn, 1, 1, "OK")
 		p2 := &protobuf.BackContent{}
 		p2.Id = RCV_SUCCESS_FAIL
 		p2.Msg = "OK"
@@ -175,18 +179,21 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 	user := MinChatSer.AllUser[conn]
 	if r, ok := MinChatSer.AllRoomKeyRoomName[rcvContent.ParamString]; ok {
 		if (r.Id == user.RoomId) { // 在当前房间
-			param := fmt.Sprintf("you are already in %s room", rcvContent.ParamString)
-			SendBackMessage(conn, 1, 1, param)
+			p2 := &protobuf.BackContent{}
+			p2.Id = RCV_SUCCESS_FAIL
+			p2.Msg = fmt.Sprintf("you are already in %s room", rcvContent.ParamString)
+			data2, _ := proto.Marshal(p2)
+			SendMessage(conn, data2)
 		} else { // 不在当前房间
 			user.RoomName = r.Name
 			user.RoomId = r.Id
 			r.AllUser[user.Uid] = user
 			//a.Uid // 用户id
-			SendBackMessage(conn, 1, 1, "OK")
-			SendBackMessage(conn, RCV_USE_ROOM, 1, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
+			SendSuccessFailMessage(conn, "OK")
+			SendSuccessFailMessage(conn, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
 		}
 	} else { // 不存在
-		SendBackMessage(conn, 1, 1, "room "+rcvContent.ParamString+" is not found")
+		SendSuccessFailMessage(conn, "room "+rcvContent.ParamString+" is not found")
 		return
 	}
 }
@@ -216,4 +223,12 @@ func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {
 func SendMessage(conn net.Conn, data []byte) {
 	n, err := conn.Write(data)
 	fmt.Println("data send leng:", n, err)
+}
+
+func SendSuccessFailMessage(conn net.Conn, msg string) {
+	p1 := &protobuf.BackContent{}
+	p1.Id = RCV_SUCCESS_FAIL
+	p1.Msg = msg
+	data, _ := proto.Marshal(p1)
+	conn.Write(data)
 }
