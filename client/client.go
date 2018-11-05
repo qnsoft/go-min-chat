@@ -113,7 +113,7 @@ func readFromConn(conn net.Conn) {
 			doSuccessFail(backContent)
 			break
 		case msg.RCV_USE_ROOM:
-			//doMsg()
+			useRoom(backContent)
 			break
 		case msg.RCV_AUTH:
 			doAuth(backContent)
@@ -121,7 +121,14 @@ func readFromConn(conn net.Conn) {
 		case msg.RCV_SHOW_ROOMS:
 			doShowRoom(backContent)
 			break
+		case msg.RCV_USER_LIST:
+			doUserList(backContent)
+			break
+		case msg.RCV_GROUP_MSG:
+			doGroupMsg(backContent)
+			break
 		}
+
 		//if (backContent.Id == msg.RCV_USE_ROOM) {
 		//	param_arr := strings.Split(backContent.Param, " ")
 		//	cli := cli.GetCli()
@@ -148,7 +155,22 @@ func doAuth(backContent *protobuf.BackContent) {
 	}
 }
 
+func useRoom(backContent *protobuf.BackContent) {
+	cli1 := cli.GetCli()
+	cli1.RoomId = int(backContent.Room.RoomId)
+	cli1.RoomName = backContent.Room.RoomName
+}
+
 func doShowRoom(backContent *protobuf.BackContent) {
+	fmt.Println(backContent.Showroom.RoomsAndIds)
+}
+
+func doUserList(backContent *protobuf.BackContent) {
+	fmt.Println(backContent.Showroom.RoomsAndIds)
+}
+
+func doGroupMsg(backContent *protobuf.BackContent) {
+
 	fmt.Println(backContent.Showroom.RoomsAndIds)
 }
 

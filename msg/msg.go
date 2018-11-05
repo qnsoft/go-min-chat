@@ -94,9 +94,9 @@ func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 
 	}
 	if (strings.EqualFold(rcvContent.ParamString, "wang")) {
-		u.Uid = 1;
+		u.Uid = 2;
 		u.IsAuth = true
-		u.Age = 19
+		u.Age = 20
 		u.Nick = rcvContent.ParamString
 
 		userinfo := &protobuf.Userinfo{}
@@ -117,14 +117,18 @@ func doShowRooms(conn net.Conn) {
 	MinChatSer := ser.GetMinChatSer()
 	rooms := MinChatSer.AllRoomKeyRoomId
 	var innerRet string
-	for v, r := range rooms {
-		if (v == 1) {
-			innerRet = fmt.Sprintf("%d)%s(%d)", v, r.Name, r.Id)
-		} else {
-			innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v, r.Name, r.Id)
-		}
-		if (r.Id == MinChatSer.AllUser[conn].RoomId) {
-			innerRet += "*"
+	if (len(rooms) == 0) {
+		innerRet = "no room"
+	} else {
+		for v, r := range rooms {
+			if (v == 1) {
+				innerRet = fmt.Sprintf("%d)%s(%d)", v, r.Name, r.Id)
+			} else {
+				innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v, r.Name, r.Id)
+			}
+			if (r.Id == MinChatSer.AllUser[conn].RoomId) {
+				innerRet += "*"
+			}
 		}
 	}
 	p1 := &protobuf.BackContent{}
@@ -178,8 +182,26 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 			user.RoomId = r.Id
 			r.AllUser[user.Uid] = user
 			//a.Uid // 用户id
+
+			//int32     id = 1;
+			//int32     code = 2;
+			//string    msg = 3;
+			//Auth      auth = 4;
+			//ShowRoom  showroom = 5;
+			//GroupMsg  groupmsg = 6;
+			//Room      room = 7;
+
+			p1 := &protobuf.BackContent{}
+			room := &protobuf.Room{}
+			room.RoomId = int32(r.Id)
+			room.RoomName = r.Name
+			p1.Id = RCV_USE_ROOM
+			p1.Room = room
+			data, _ := proto.Marshal(p1)
 			SendSuccessFailMessage(conn, "OK")
-			SendSuccessFailMessage(conn, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
+			SendMessage(conn, data)
+			//SendSuccessFailMessage(conn, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
+
 		}
 	} else { // 不存在
 		SendSuccessFailMessage(conn, "room "+rcvContent.ParamString+" is not found")

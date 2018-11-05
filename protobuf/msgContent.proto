@@ -18,6 +18,7 @@ message BackContent
    Auth      auth = 4;
    ShowRoom  showroom = 5;
    GroupMsg  groupmsg = 6;
+   Room      room = 7;
 }
 
 message Auth
