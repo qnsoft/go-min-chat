@@ -125,14 +125,6 @@ func readFromConn(conn net.Conn) {
 			doGroupMsg(backContent)
 			break
 		}
-
-		//if (backContent.Id == msg.RCV_USE_ROOM) {
-		//	param_arr := strings.Split(backContent.Param, " ")
-		//	cli := cli.GetCli()
-		//	cli.RoomId, err = strconv.Atoi(param_arr[0])
-		//	cli.RoomName = param_arr[1]
-		//}
-		//fmt.Println(clcolor.Red(backContent.Param));
 		fmt.Print(getPre())
 	}
 }

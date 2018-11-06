@@ -187,22 +187,14 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 			user.RoomName = r.Name
 			user.RoomId = r.Id
 			r.AllUser[user.Uid] = user
-			//a.Uid // 用户id
 
-			//int32     id = 1;
-			//int32     code = 2;
-			//string    msg = 3;
-			//Auth      auth = 4;
-			//ShowRoom  showroom = 5;
-			//GroupMsg  groupmsg = 6;
-			//Room      room = 7;
 
 			p1 := &protobuf.BackContent{}
-			room := &protobuf.Room{}
-			room.RoomId = int32(r.Id)
-			room.RoomName = r.Name
+			room1 := &protobuf.Room{}
+			room1.RoomId = int32(r.Id)
+			room1.RoomName = r.Name
 			p1.Id = RCV_USE_ROOM
-			p1.Room = room
+			p1.Room = room1
 			data, _ := proto.Marshal(p1)
 			SendSuccessFailMessage(conn, "OK")
 			SendMessage(conn, data)
