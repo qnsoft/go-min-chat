@@ -188,7 +188,6 @@ func doUseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 			user.RoomId = r.Id
 			r.AllUser[user.Uid] = user
 
-
 			p1 := &protobuf.BackContent{}
 			room1 := &protobuf.Room{}
 			room1.RoomId = int32(r.Id)
@@ -222,8 +221,9 @@ func doGroupMsg(conn net.Conn, rcvContent *protobuf.Content) {
 
 	data, _ := proto.Marshal(p1)
 	for _, v := range Room.AllUser {
-		fmt.Println(v)
-		SendMessage(v.Conn, data)
+		if (conn != v.Conn) {
+			SendMessage(v.Conn, data)
+		}
 	}
 }
 

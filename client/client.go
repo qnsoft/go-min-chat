@@ -93,6 +93,11 @@ func readFromStdio(ch chan []byte) {
 				continue
 			}
 		}
+		client := cli.GetCli()
+		if (!client.IsAuth && p1.Id != msg.RCV_AUTH) {
+			EchoLine("请先登录", 1)
+			continue
+		}
 		d, _ := proto.Marshal(p1)
 		ch <- d
 	}
@@ -130,7 +135,7 @@ func readFromConn(conn net.Conn) {
 }
 
 func doSuccessFail(backContent *protobuf.BackContent) {
-	fmt.Println(backContent.Msg)
+	fmt.Println(colors.Green(backContent.Msg))
 }
 
 func doAuth(backContent *protobuf.BackContent) {
@@ -139,6 +144,7 @@ func doAuth(backContent *protobuf.BackContent) {
 	if (backContent.Auth.IsOk) { // 登录成功
 		cli1.Nick = backContent.Auth.UseInfo.Nick
 		cli1.Uid = backContent.Auth.UseInfo.Uid
+		EchoLine("OK", 1)
 	} else { // 登录失败 or 需要去登录
 		fmt.Println("请先登录")
 	}
@@ -172,10 +178,20 @@ func sendMsg(conn net.Conn, ch chan []byte) {
 
 func getPre() string {
 	cliSing := cli.GetCli()
-	pre := fmt.Sprintf("%s:%s> ", cliSing.Host, cliSing.Port)
+	var pre string
+	//pre := fmt.Sprintf("%s:%s> ", cliSing.Host, cliSing.Port)
 	if (cliSing.RoomId != 0) {
-		room := colors.Red(fmt.Sprintf("[%s(%d)]", cliSing.RoomName, cliSing.RoomId))
-		pre = fmt.Sprintf("%s%s ", strings.TrimSuffix(pre, " "), room)
+		room := colors.Red(fmt.Sprintf("%s", cliSing.RoomName))
+		pre = fmt.Sprintf("%s%s 我: ", strings.TrimSuffix(pre, " "), room)
 	}
 	return pre
+}
+
+func EchoLine(content string, level int) {
+	var s string
+	switch level {
+	case 1:
+		s = colors.Green(content)
+	}
+	fmt.Println(s)
 }
