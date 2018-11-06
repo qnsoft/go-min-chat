@@ -12,6 +12,7 @@ import (
 	"strings"
 	"go-min-chat/msg"
 	"go-min-chat/cli"
+	"github.com/beego/bee/logger/colors"
 )
 
 func checkError(err error) {
@@ -181,7 +182,8 @@ func getPre() string {
 	cliSing := cli.GetCli()
 	pre := fmt.Sprintf("%s:%s> ", cliSing.Host, cliSing.Port)
 	if (cliSing.RoomId != 0) {
-		pre = fmt.Sprintf("%s[%s(%d)] ", pre, cliSing.RoomName, cliSing.RoomId)
+		room := colors.Red(fmt.Sprintf("[%s(%d)]", cliSing.RoomName, cliSing.RoomId))
+		pre = fmt.Sprintf("%s%s ", strings.TrimSuffix(pre, " "), room)
 	}
 	return pre
 }

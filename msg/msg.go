@@ -56,6 +56,16 @@ func DoMsg(conn net.Conn, msgContent []byte) {
 func doUserList(conn net.Conn) {
 	MinChatSer := ser.GetMinChatSer()
 	u := MinChatSer.AllUser[conn]
+
+	isAuth := CheckAuth(conn)
+	if (!isAuth) { // 这个自己没有登录就不能使用这个命令
+		return
+	}
+
+	isRoom := CheckRoom(conn)
+	if (!isRoom) { // 这个自己没有登录就不能使用这个命令
+		return
+	}
 	fmt.Println("roomName:", u.RoomName, "roomId:", u.RoomId)
 	allUser := MinChatSer.AllRoomKeyRoomId[u.RoomId].AllUser
 	fmt.Println(allUser)
@@ -152,14 +162,8 @@ func doCreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 	} else { // 房间不存在
 		// 创建了当前用户的房间信息
 		user := MinChatSer.AllUser[conn]
-		if (!user.IsAuth) { // 没有登录是不能创建房间的
-			p1 := &protobuf.BackContent{}
-			p1.Id = RCV_AUTH
-			auth := &protobuf.Auth{}
-			auth.IsOk = false
-			p1.Auth = auth
-			data, _ := proto.Marshal(p1)
-			SendMessage(conn, data)
+		isAuth := CheckAuth(conn);
+		if (!isAuth) {
 			return
 		}
 		rootSing := room.GetRoom()
@@ -249,4 +253,32 @@ func SendSuccessFailMessage(conn net.Conn, msg string) {
 	p1.Msg = msg
 	data, _ := proto.Marshal(p1)
 	conn.Write(data)
+}
+
+func CheckAuth(conn net.Conn) bool {
+	MinChatSer := ser.GetMinChatSer()
+	user := MinChatSer.AllUser[conn]
+	if (!user.IsAuth) { // 没有登录是不能创建房间的
+		p1 := &protobuf.BackContent{}
+		p1.Id = RCV_AUTH
+		auth := &protobuf.Auth{}
+		auth.IsOk = false
+		p1.Auth = auth
+		data, _ := proto.Marshal(p1)
+		SendMessage(conn, data)
+		return false
+	} else {
+		return true
+	}
+}
+
+func CheckRoom(conn net.Conn) bool {
+	MinChatSer := ser.GetMinChatSer()
+	user := MinChatSer.AllUser[conn]
+	if (user.RoomId == 0) { // 没有进入房间
+		SendSuccessFailMessage(conn, "请先进入房间")
+		return false
+	} else {
+		return true
+	}
 }
