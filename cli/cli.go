@@ -9,6 +9,7 @@ type Cli struct {
 	RoomName string // 当前进入的roomName
 	IsAuth   bool
 	Nick     string
+	Password string
 	Uid      int32
 	Host     string
 	Port     string

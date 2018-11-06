@@ -8,6 +8,8 @@ message Content
    string    command = 2;
    int32     param_id = 3;
    string    param_string = 4;
+   string    nick = 5;
+   string    password = 6;
 }
 
 message BackContent

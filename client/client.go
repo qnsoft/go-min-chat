@@ -24,10 +24,15 @@ func checkError(err error) {
 
 func main() {
 	cliSing := cli.GetCli()
-	flag.StringVar(&(cliSing.Port), "p", "8080", "port")
+	flag.StringVar(&(cliSing.Nick), "u", "wang", "nick name")
+	flag.StringVar(&(cliSing.Password), "p", "123456", "password")
 	flag.StringVar(&(cliSing.Host), "h", "127.0.0.1", "host")
+	flag.StringVar(&(cliSing.Port), "port", "8080", "port")
 	flag.Parse()
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", cliSing.Host, cliSing.Port))
+
+	// 啥也不干, 想登录判断
+
 	checkError(err)
 	defer conn.Close()
 	fmt.Print(getPre())
@@ -37,6 +42,8 @@ func main() {
 	go readFromStdio(ch)
 	go readFromConn(conn)
 	go sendMsg(conn, ch)
+	// 发送登录的消息
+	conn.Write(SendAuthMsg(cliSing.Nick, cliSing.Password))
 	//go heartBeat(conn)
 	wg.Wait()
 }
@@ -60,15 +67,16 @@ func readFromStdio(ch chan []byte) {
 		reader := bufio.NewReader(os.Stdin)
 		data, _, _ := reader.ReadLine()
 		data = []byte(strings.Trim(string(data), " "))
-		p1 := &protobuf.Content{}
 		data_str := string(data)
+		if (strings.EqualFold(data_str, "")) { // 直接按的回车, 不做处理
+			continue
+		}
+		p1 := &protobuf.Content{}
 		data_str_upper := strings.ToUpper(data_str)
 		param := strings.Split(data_str, " ")
+		//var reback []byte
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
 			p1.Id = msg.RCV_SHOW_ROOMS
-		} else if (strings.HasPrefix(data_str_upper, "AUTH")) {
-			p1.Id = msg.RCV_AUTH
-			p1.ParamString = param[1]
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
 			if (len(param) < 3) {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
@@ -194,4 +202,13 @@ func EchoLine(content string, level int) {
 		s = colors.Green(content)
 	}
 	fmt.Println(s)
+}
+
+func SendAuthMsg(nick string, password string) []byte {
+	p1 := &protobuf.Content{}
+	p1.Id = msg.RCV_AUTH
+	p1.Nick = nick
+	p1.Password = password
+	data, _ := proto.Marshal(p1)
+	return data
 }

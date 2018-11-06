@@ -85,41 +85,24 @@ func doAuth(conn net.Conn, rcvContent *protobuf.Content) {
 	u := MinChatSer.AllUser[conn]
 	p1 := &protobuf.BackContent{}
 	p1.Id = RCV_AUTH
-	if (strings.EqualFold(rcvContent.ParamString, "thomas")) {
-		// 设置本地的
-		u.Uid = 1;
-		u.IsAuth = true
-		u.Age = 19
-		u.Nick = rcvContent.ParamString
-		u.Conn = conn
-		// 组装数据给客户端返回
-		userinfo := &protobuf.Userinfo{}
-		userinfo.Nick = rcvContent.ParamString
-		userinfo.Uid = int32(u.Uid)
+	if (strings.EqualFold(rcvContent.Password, "123456")) { // 相等说明登录正确
+		if (strings.EqualFold(rcvContent.Nick, "wang")) {
+			u.Uid = 1;
+			u.IsAuth = true
+			u.Age = 19
+			u.Nick = rcvContent.Nick
+			u.Conn = conn
 
-		auth := &protobuf.Auth{}
-		auth.IsOk = true
-		auth.UseInfo = userinfo
+			// 组装数据给客户端返回
+			userinfo := &protobuf.Userinfo{}
+			userinfo.Nick = rcvContent.ParamString
+			userinfo.Uid = int32(u.Uid)
 
-		p1.Auth = auth
-
-	}
-	if (strings.EqualFold(rcvContent.ParamString, "wang")) {
-		u.Uid = 2;
-		u.IsAuth = true
-		u.Age = 20
-		u.Nick = rcvContent.ParamString
-		u.Conn = conn
-
-		userinfo := &protobuf.Userinfo{}
-		userinfo.Nick = rcvContent.ParamString
-		userinfo.Uid = int32(u.Uid)
-
-		auth := &protobuf.Auth{}
-		auth.IsOk = true
-		auth.UseInfo = userinfo
-
-		p1.Auth = auth
+			auth := &protobuf.Auth{}
+			auth.IsOk = true
+			auth.UseInfo = userinfo
+			p1.Auth = auth
+		}
 	}
 	data, _ := proto.Marshal(p1)
 	SendMessage(conn, data);
