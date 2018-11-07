@@ -35,9 +35,9 @@ func main() {
 	wg.Add(3)
 	go readFromStdio(ch)
 	go readFromConn(conn)
-	go sendMsg(conn, ch)
+	go ClientMsg.Send(conn, ch)
 	// 发送登录的消息
-	conn.Write(SendAuthMsg(cliSing.Nick, cliSing.Password))
+	conn.Write(ClientMsg.SendAuth(cliSing.Nick, cliSing.Password))
 	//go heartBeat(conn)
 	wg.Wait()
 }
@@ -129,30 +129,9 @@ func readFromConn(conn net.Conn) {
 			ClientMsg.UserList(backContent)
 			break
 		case _const.RCV_GROUP_MSG:
-			doGroupMsg(backContent)
+			ClientMsg.GroupMsg(backContent)
 			break
 		}
 		fmt.Print(ClientUtil.GetPre())
 	}
-}
-
-func doGroupMsg(backContent *protobuf.BackContent) {
-	fmt.Printf("%s: %s\n", backContent.Groupmsg.Nick, backContent.Groupmsg.Content)
-}
-
-func sendMsg(conn net.Conn, ch chan []byte) {
-	for {
-		content, _ := <-ch
-		_, err := conn.Write(content)
-		Util.CheckError(err)
-	}
-}
-
-func SendAuthMsg(nick string, password string) []byte {
-	p1 := &protobuf.Content{}
-	p1.Id = _const.RCV_AUTH
-	p1.Nick = nick
-	p1.Password = password
-	data, _ := proto.Marshal(p1)
-	return data
 }

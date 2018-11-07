@@ -5,6 +5,8 @@ import (
 	"go-min-chat/ClientApp"
 	"go-min-chat/Util"
 	"os"
+	"go-min-chat/const"
+	"github.com/golang/protobuf/proto"
 )
 
 func Auth(backContent *protobuf.BackContent) {
@@ -18,4 +20,13 @@ func Auth(backContent *protobuf.BackContent) {
 		Util.EchoLine(backContent.Auth.Msg, 2)
 		os.Exit(1)
 	}
+}
+
+func SendAuth(nick string, password string) []byte {
+	p1 := &protobuf.Content{}
+	p1.Id = _const.RCV_AUTH
+	p1.Nick = nick
+	p1.Password = password
+	data, _ := proto.Marshal(p1)
+	return data
 }
