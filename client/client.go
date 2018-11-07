@@ -10,14 +10,15 @@ import (
 	"go-min-chat/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"strings"
-	"go-min-chat/cli"
-	"github.com/beego/bee/logger/colors"
 	"go-min-chat/const"
 	"go-min-chat/Util"
+	"go-min-chat/ClientMsg"
+	"go-min-chat/ClientUtil"
+	"go-min-chat/ClientApp"
 )
 
 func main() {
-	cliSing := cli.GetCli()
+	cliSing := ClientApp.GetCli()
 	flag.StringVar(&(cliSing.Nick), "u", "wang", "nick name")
 	flag.StringVar(&(cliSing.Password), "p", "123456", "password")
 	flag.StringVar(&(cliSing.Host), "h", "127.0.0.1", "host")
@@ -28,7 +29,7 @@ func main() {
 	// 啥也不干, 想登录判断
 	Util.CheckError(err)
 	defer conn.Close()
-	fmt.Print(getPre())
+	fmt.Print(ClientUtil.GetPre())
 	var wg sync.WaitGroup
 	ch := make(chan []byte)
 	wg.Add(3)
@@ -73,7 +74,7 @@ func readFromStdio(ch chan []byte) {
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
 			if (len(param) < 3) {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
-				fmt.Printf(getPre())
+				fmt.Printf(ClientUtil.GetPre())
 				continue
 			}
 			p1.Id = _const.RCV_CREATE_ROOM
@@ -84,17 +85,17 @@ func readFromStdio(ch chan []byte) {
 			p1.Id = _const.RCV_USE_ROOM
 			p1.ParamString = param[1]
 		} else {
-			cliSing := cli.GetCli()
+			cliSing := ClientApp.GetCli()
 			if (cliSing.RoomId != 0) { // 说明进入房间了
 				p1.Id = _const.RCV_GROUP_MSG
 				p1.ParamString = param[0]
 			} else {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
-				fmt.Printf(getPre())
+				fmt.Printf(ClientUtil.GetPre())
 				continue
 			}
 		}
-		client := cli.GetCli()
+		client := ClientApp.GetCli()
 		if (!client.IsAuth && p1.Id != _const.RCV_AUTH) {
 			Util.EchoLine("请先登录", 2)
 			continue
@@ -113,16 +114,16 @@ func readFromConn(conn net.Conn) {
 		proto.Unmarshal(buf[:n], backContent)
 		switch backContent.Id {
 		case _const.RCV_SUCCESS_FAIL:
-			doSuccessFail(backContent)
+			Util.EchoLine(backContent.Msg, 2)
 			break
 		case _const.RCV_USE_ROOM:
-			useRoom(backContent)
+			ClientMsg.UseRoom(backContent)
 			break
 		case _const.RCV_AUTH:
 			doAuth(backContent)
 			break
 		case _const.RCV_SHOW_ROOMS:
-			doShowRoom(backContent)
+			ClientMsg.ShowRoom(backContent)
 			break
 		case _const.RCV_USER_LIST:
 			doUserList(backContent)
@@ -131,16 +132,12 @@ func readFromConn(conn net.Conn) {
 			doGroupMsg(backContent)
 			break
 		}
-		fmt.Print(getPre())
+		fmt.Print(ClientUtil.GetPre())
 	}
 }
 
-func doSuccessFail(backContent *protobuf.BackContent) {
-	fmt.Println(colors.Green(backContent.Msg))
-}
-
 func doAuth(backContent *protobuf.BackContent) {
-	cli1 := cli.GetCli()
+	cli1 := ClientApp.GetCli()
 	cli1.IsAuth = backContent.Auth.IsOk
 	if (backContent.Auth.IsOk) { // 登录成功
 		cli1.Nick = backContent.Auth.UseInfo.Nick
@@ -150,16 +147,6 @@ func doAuth(backContent *protobuf.BackContent) {
 		Util.EchoLine(backContent.Auth.Msg, 2)
 		os.Exit(1)
 	}
-}
-
-func useRoom(backContent *protobuf.BackContent) {
-	cli1 := cli.GetCli()
-	cli1.RoomId = int(backContent.Room.RoomId)
-	cli1.RoomName = backContent.Room.RoomName
-}
-
-func doShowRoom(backContent *protobuf.BackContent) {
-	fmt.Println(backContent.Showroom.RoomsAndIds)
 }
 
 func doUserList(backContent *protobuf.BackContent) {
@@ -176,17 +163,6 @@ func sendMsg(conn net.Conn, ch chan []byte) {
 		_, err := conn.Write(content)
 		Util.CheckError(err)
 	}
-}
-
-func getPre() string {
-	cliSing := cli.GetCli()
-	var pre string
-	//pre := fmt.Sprintf("%s:%s> ", cliSing.Host, cliSing.Port)
-	if (cliSing.RoomId != 0) {
-		room := colors.Red(fmt.Sprintf("%s", cliSing.RoomName))
-		pre = fmt.Sprintf("%s%s 我: ", strings.TrimSuffix(pre, " "), room)
-	}
-	return pre
 }
 
 func SendAuthMsg(nick string, password string) []byte {
