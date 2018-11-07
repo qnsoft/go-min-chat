@@ -120,13 +120,13 @@ func readFromConn(conn net.Conn) {
 			ClientMsg.UseRoom(backContent)
 			break
 		case _const.RCV_AUTH:
-			doAuth(backContent)
+			ClientMsg.Auth(backContent)
 			break
 		case _const.RCV_SHOW_ROOMS:
 			ClientMsg.ShowRoom(backContent)
 			break
 		case _const.RCV_USER_LIST:
-			doUserList(backContent)
+			ClientMsg.UserList(backContent)
 			break
 		case _const.RCV_GROUP_MSG:
 			doGroupMsg(backContent)
@@ -134,23 +134,6 @@ func readFromConn(conn net.Conn) {
 		}
 		fmt.Print(ClientUtil.GetPre())
 	}
-}
-
-func doAuth(backContent *protobuf.BackContent) {
-	cli1 := ClientApp.GetCli()
-	cli1.IsAuth = backContent.Auth.IsOk
-	if (backContent.Auth.IsOk) { // 登录成功
-		cli1.Nick = backContent.Auth.UseInfo.Nick
-		cli1.Uid = backContent.Auth.UseInfo.Uid
-		Util.EchoLine("OK", 1)
-	} else { // 登录失败 or 需要去登录
-		Util.EchoLine(backContent.Auth.Msg, 2)
-		os.Exit(1)
-	}
-}
-
-func doUserList(backContent *protobuf.BackContent) {
-	fmt.Println(backContent.Showroom.RoomsAndIds)
 }
 
 func doGroupMsg(backContent *protobuf.BackContent) {
