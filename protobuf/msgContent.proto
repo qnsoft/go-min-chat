@@ -26,7 +26,8 @@ message BackContent
 message Auth
 {
     bool     isOk = 1;
-    Userinfo useInfo = 2;
+    string   msg = 2;
+    Userinfo useInfo = 3;
 }
 
 message GroupMsg

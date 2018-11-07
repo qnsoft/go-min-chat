@@ -28,12 +28,6 @@ func init() {
 }
 
 func main() {
-	//DB := mysql.InitDB()
-	//user := mysql.SelectUserById("wang22", DB)
-	//if (user.Uid == 0) { // 没有找到该用户
-	//
-	//}
-	//os.Exit(1)
 	addr := fmt.Sprintf("%s:%d", S.host, S.port)
 	listen, err := net.Listen("tcp", addr)
 	util.CheckError(err)

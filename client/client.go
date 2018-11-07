@@ -103,7 +103,7 @@ func readFromStdio(ch chan []byte) {
 		}
 		client := cli.GetCli()
 		if (!client.IsAuth && p1.Id != msg.RCV_AUTH) {
-			EchoLine("请先登录", 1)
+			EchoLine("请先登录", 2)
 			continue
 		}
 		d, _ := proto.Marshal(p1)
@@ -154,7 +154,8 @@ func doAuth(backContent *protobuf.BackContent) {
 		cli1.Uid = backContent.Auth.UseInfo.Uid
 		EchoLine("OK", 1)
 	} else { // 登录失败 or 需要去登录
-		fmt.Println("请先登录")
+		EchoLine(backContent.Auth.Msg, 2)
+		os.Exit(1)
 	}
 }
 
@@ -200,6 +201,8 @@ func EchoLine(content string, level int) {
 	switch level {
 	case 1:
 		s = colors.Green(content)
+	case 2:
+		s = colors.Red(content)
 	}
 	fmt.Println(s)
 }
