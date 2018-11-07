@@ -1,10 +1,11 @@
-package util
+package Util
 
 import (
 	"fmt"
 	"os"
 	"net"
 	"io"
+	"github.com/beego/bee/logger/colors"
 )
 
 func CheckError(err error) {
@@ -25,4 +26,15 @@ func ConnReadCheckError(err error, conn net.Conn) int {
 		}
 	}
 	return 1
+}
+
+func EchoLine(content string, level int) {
+	var s string
+	switch level {
+	case 1:
+		s = colors.Green(content)
+	case 2:
+		s = colors.Red(content)
+	}
+	fmt.Println(s)
 }

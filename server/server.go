@@ -7,7 +7,7 @@ import (
 	"flag"
 	"go-min-chat/server/ser"
 	"go-min-chat/mysql"
-	"go-min-chat/util"
+	"go-min-chat/Util"
 	"go-min-chat/Msg"
 )
 
@@ -30,7 +30,7 @@ func init() {
 func main() {
 	addr := fmt.Sprintf("%s:%d", S.host, S.port)
 	listen, err := net.Listen("tcp", addr)
-	util.CheckError(err)
+	Util.CheckError(err)
 	defer listen.Close()
 	fmt.Println("Ready to accept connections")
 	MinChatSer := ser.GetMinChatSer()
@@ -41,7 +41,7 @@ func main() {
 		u = mysql.BuildUser(0, "", 0, false)
 		MinChatSer.AllUser[newConn] = u
 		fmt.Println(newConn.RemoteAddr())
-		util.CheckError(err)
+		Util.CheckError(err)
 		ch := make(chan []byte)
 		go recvConnMsg(newConn, ch)
 		go sendConnMsg(newConn, ch)
@@ -55,7 +55,7 @@ Loop:
 	for {
 		fmt.Println("-----");
 		n, err := conn.Read(buf)
-		ret := util.ConnReadCheckError(err, conn)
+		ret := Util.ConnReadCheckError(err, conn)
 		if (ret == 0) { // 读取时, 发生了错误
 			os.Exit(1)
 		} else if (ret == -1) { // 客户端断开了连接

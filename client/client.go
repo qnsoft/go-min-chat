@@ -13,14 +13,8 @@ import (
 	"go-min-chat/cli"
 	"github.com/beego/bee/logger/colors"
 	"go-min-chat/const"
+	"go-min-chat/Util"
 )
-
-func checkError(err error) {
-	if err != nil {
-		fmt.Println("Error: %s", err.Error())
-		os.Exit(1)
-	}
-}
 
 func main() {
 	cliSing := cli.GetCli()
@@ -32,8 +26,7 @@ func main() {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", cliSing.Host, cliSing.Port))
 
 	// 啥也不干, 想登录判断
-
-	checkError(err)
+	Util.CheckError(err)
 	defer conn.Close()
 	fmt.Print(getPre())
 	var wg sync.WaitGroup
@@ -103,7 +96,7 @@ func readFromStdio(ch chan []byte) {
 		}
 		client := cli.GetCli()
 		if (!client.IsAuth && p1.Id != _const.RCV_AUTH) {
-			EchoLine("请先登录", 2)
+			Util.EchoLine("请先登录", 2)
 			continue
 		}
 		d, _ := proto.Marshal(p1)
@@ -115,7 +108,7 @@ func readFromConn(conn net.Conn) {
 	for {
 		buf := make([]byte, 500)
 		n, err := conn.Read(buf)
-		checkError(err)
+		Util.CheckError(err)
 		backContent := &protobuf.BackContent{}
 		proto.Unmarshal(buf[:n], backContent)
 		switch backContent.Id {
@@ -152,9 +145,9 @@ func doAuth(backContent *protobuf.BackContent) {
 	if (backContent.Auth.IsOk) { // 登录成功
 		cli1.Nick = backContent.Auth.UseInfo.Nick
 		cli1.Uid = backContent.Auth.UseInfo.Uid
-		EchoLine("OK", 1)
+		Util.EchoLine("OK", 1)
 	} else { // 登录失败 or 需要去登录
-		EchoLine(backContent.Auth.Msg, 2)
+		Util.EchoLine(backContent.Auth.Msg, 2)
 		os.Exit(1)
 	}
 }
@@ -181,7 +174,7 @@ func sendMsg(conn net.Conn, ch chan []byte) {
 	for {
 		content, _ := <-ch
 		_, err := conn.Write(content)
-		checkError(err)
+		Util.CheckError(err)
 	}
 }
 
@@ -194,17 +187,6 @@ func getPre() string {
 		pre = fmt.Sprintf("%s%s 我: ", strings.TrimSuffix(pre, " "), room)
 	}
 	return pre
-}
-
-func EchoLine(content string, level int) {
-	var s string
-	switch level {
-	case 1:
-		s = colors.Green(content)
-	case 2:
-		s = colors.Red(content)
-	}
-	fmt.Println(s)
 }
 
 func SendAuthMsg(nick string, password string) []byte {
