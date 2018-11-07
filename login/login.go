@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func CheckLog(user1 mysql.User, user2 mysql.UserForLog) bool {
+func CheckLog(user1 *mysql.User, user2 mysql.UserForLog) bool {
 	//db 操作
 	db := mysql.InitDB()
 	user12 := mysql.SelectUserById(user2.Nick, db)

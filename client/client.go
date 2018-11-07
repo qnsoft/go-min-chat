@@ -74,7 +74,7 @@ func readFromStdio(ch chan []byte) {
 		p1 := &protobuf.Content{}
 		data_str_upper := strings.ToUpper(data_str)
 		param := strings.Split(data_str, " ")
-		//var reback []byte
+
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
 			p1.Id = _const.RCV_SHOW_ROOMS
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {

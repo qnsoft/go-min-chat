@@ -18,7 +18,7 @@ func Auth(conn net.Conn, rcvContent *protobuf.Content) {
 	p1.Id = _const.RCV_AUTH
 	fmt.Println("有人来登录", rcvContent.Nick, rcvContent.Password)
 	logUser := mysql.UserForLog{Nick: rcvContent.Nick, Password: rcvContent.Password}
-	isAuth := login.CheckLog(*u, logUser)
+	isAuth := login.CheckLog(u, logUser)
 	if (isAuth) {
 		u.Conn = conn
 		// 组装数据给客户端返回
