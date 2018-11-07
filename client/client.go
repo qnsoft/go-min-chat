@@ -10,9 +10,9 @@ import (
 	"go-min-chat/protobuf/proto"
 	"github.com/golang/protobuf/proto"
 	"strings"
-	"go-min-chat/msg"
 	"go-min-chat/cli"
 	"github.com/beego/bee/logger/colors"
+	"go-min-chat/const"
 )
 
 func checkError(err error) {
@@ -76,24 +76,24 @@ func readFromStdio(ch chan []byte) {
 		param := strings.Split(data_str, " ")
 		//var reback []byte
 		if (strings.HasPrefix(data_str_upper, "SHOW ROOMS")) {
-			p1.Id = msg.RCV_SHOW_ROOMS
+			p1.Id = _const.RCV_SHOW_ROOMS
 		} else if (strings.HasPrefix(data_str_upper, "CREATE ROOM")) {
 			if (len(param) < 3) {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
 				fmt.Printf(getPre())
 				continue
 			}
-			p1.Id = msg.RCV_CREATE_ROOM
+			p1.Id = _const.RCV_CREATE_ROOM
 			p1.ParamString = param[2]
 		} else if (strings.HasPrefix(data_str_upper, "USER LIST")) {
-			p1.Id = msg.RCV_USER_LIST
+			p1.Id = _const.RCV_USER_LIST
 		} else if (strings.HasPrefix(data_str_upper, "USE")) {
-			p1.Id = msg.RCV_USE_ROOM
+			p1.Id = _const.RCV_USE_ROOM
 			p1.ParamString = param[1]
 		} else {
 			cliSing := cli.GetCli()
 			if (cliSing.RoomId != 0) { // 说明进入房间了
-				p1.Id = msg.RCV_GROUP_MSG
+				p1.Id = _const.RCV_GROUP_MSG
 				p1.ParamString = param[0]
 			} else {
 				fmt.Println(fmt.Sprintf("(error) ERR unknown command '%s'", data_str_upper))
@@ -102,7 +102,7 @@ func readFromStdio(ch chan []byte) {
 			}
 		}
 		client := cli.GetCli()
-		if (!client.IsAuth && p1.Id != msg.RCV_AUTH) {
+		if (!client.IsAuth && p1.Id != _const.RCV_AUTH) {
 			EchoLine("请先登录", 2)
 			continue
 		}
@@ -119,22 +119,22 @@ func readFromConn(conn net.Conn) {
 		backContent := &protobuf.BackContent{}
 		proto.Unmarshal(buf[:n], backContent)
 		switch backContent.Id {
-		case msg.RCV_SUCCESS_FAIL:
+		case _const.RCV_SUCCESS_FAIL:
 			doSuccessFail(backContent)
 			break
-		case msg.RCV_USE_ROOM:
+		case _const.RCV_USE_ROOM:
 			useRoom(backContent)
 			break
-		case msg.RCV_AUTH:
+		case _const.RCV_AUTH:
 			doAuth(backContent)
 			break
-		case msg.RCV_SHOW_ROOMS:
+		case _const.RCV_SHOW_ROOMS:
 			doShowRoom(backContent)
 			break
-		case msg.RCV_USER_LIST:
+		case _const.RCV_USER_LIST:
 			doUserList(backContent)
 			break
-		case msg.RCV_GROUP_MSG:
+		case _const.RCV_GROUP_MSG:
 			doGroupMsg(backContent)
 			break
 		}
@@ -209,7 +209,7 @@ func EchoLine(content string, level int) {
 
 func SendAuthMsg(nick string, password string) []byte {
 	p1 := &protobuf.Content{}
-	p1.Id = msg.RCV_AUTH
+	p1.Id = _const.RCV_AUTH
 	p1.Nick = nick
 	p1.Password = password
 	data, _ := proto.Marshal(p1)

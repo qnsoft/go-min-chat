@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"os"
 	"flag"
-	"go-min-chat/msg"
 	"go-min-chat/server/ser"
 	"go-min-chat/mysql"
 	"go-min-chat/util"
+	"go-min-chat/Msg"
 )
 
 type Server struct {
@@ -72,7 +72,7 @@ func sendConnMsg(conn net.Conn, ch chan []byte) {
 		fmt.Println("-----")
 		content, _ := <-ch
 		var ret string
-		msg.DoMsg(conn, content)
+		Msg.DoAllMsg(conn, content)
 		fmt.Println(ret)
 	}
 }
