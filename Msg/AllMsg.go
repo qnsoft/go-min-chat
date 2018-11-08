@@ -32,6 +32,10 @@ func DoAllMsg(conn net.Conn, msgContent []byte) {
 	case _const.RCV_USER_LIST:
 		UserList(conn)
 		break
+	case _const.RCV_WHOAMI:
+		WhoAmI(conn)
+		break
 	}
+
 }
 

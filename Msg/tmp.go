@@ -29,7 +29,7 @@ func CheckRoom(conn net.Conn) bool {
 	MinChatSer := ser.GetMinChatSer()
 	user := MinChatSer.AllUser[conn]
 	if (user.RoomId == 0) { // 没有进入房间
-		SendSuccessFailMessage(conn, "请先进入房间")
+		SendFailMessage(conn, "请先进入房间")
 		return false
 	} else {
 		return true

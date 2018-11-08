@@ -11,7 +11,7 @@ func UserList(conn net.Conn) {
 	MinChatSer := ser.GetMinChatSer()
 	u := MinChatSer.AllUser[conn]
 
-	isAuth :=  CheckAuth(conn)
+	isAuth := CheckAuth(conn)
 	if (!isAuth) { // 这个自己没有登录就不能使用这个命令
 		return
 	}
@@ -31,5 +31,5 @@ func UserList(conn net.Conn) {
 			allUserStr += v.Nick + "\n"
 		}
 	}
-	SendSuccessFailMessage(conn, strings.TrimSuffix(allUserStr, "\n"))
+	SendSuccessMessage(conn, strings.TrimSuffix(allUserStr, "\n"))
 }

@@ -14,7 +14,7 @@ func UseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 	user := MinChatSer.AllUser[conn]
 	if r, ok := MinChatSer.AllRoomKeyRoomName[rcvContent.ParamString]; ok {
 		if (r.Id == user.RoomId) { // 在当前房间
-			SendSuccessFailMessage(conn, fmt.Sprintf("you are already in %s room", rcvContent.ParamString))
+			SendFailMessage(conn, fmt.Sprintf("you are already in %s room", rcvContent.ParamString))
 		} else { // 不在当前房间
 			user.RoomName = r.Name
 			user.RoomId = r.Id
@@ -27,13 +27,13 @@ func UseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 			p1.Id = _const.RCV_USE_ROOM
 			p1.Room = room1
 			data, _ := proto.Marshal(p1)
-			SendSuccessFailMessage(conn, "OK")
+			SendSuccessMessage(conn, "OK")
 			SendMessage(conn, data)
 			//SendSuccessFailMessage(conn, fmt.Sprintf("%d %s", 1, rcvContent.ParamString))
 
 		}
 	} else { // 不存在
-		SendSuccessFailMessage(conn, "room "+rcvContent.ParamString+" is not found")
+		SendFailMessage(conn, "room "+rcvContent.ParamString+" is not found")
 		return
 	}
 }

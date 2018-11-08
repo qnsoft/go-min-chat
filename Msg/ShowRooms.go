@@ -18,9 +18,9 @@ func ShowRooms(conn net.Conn) {
 	} else {
 		for v, r := range rooms {
 			if (v == 1) {
-				innerRet = fmt.Sprintf("%d)%s(%d)", v, r.Name, r.Id)
+				innerRet = fmt.Sprintf("%d)roomName:%s (roomId:%d)", v, r.Name, r.Id)
 			} else {
-				innerRet = fmt.Sprintf("%s\n%d)%s(%d)", innerRet, v, r.Name, r.Id)
+				innerRet = fmt.Sprintf("%s\n%d)roomName:%s (roomId:%d)", innerRet, v, r.Name, r.Id)
 			}
 			if (r.Id == MinChatSer.AllUser[conn].RoomId) {
 				innerRet += "*"

@@ -6,6 +6,7 @@ import (
 	"net"
 	"io"
 	"github.com/beego/bee/logger/colors"
+	"strings"
 )
 
 func CheckError(err error) {
@@ -37,4 +38,12 @@ func EchoLine(content string, level int) {
 		s = colors.Red(content)
 	}
 	fmt.Println(s)
+}
+
+func SliceUp(slice []string, sep string) string {
+	var ret string
+	for _, v := range slice {
+		ret += strings.ToUpper(v) + sep
+	}
+	return strings.TrimSuffix(ret, sep)
 }

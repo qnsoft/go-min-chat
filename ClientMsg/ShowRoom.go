@@ -2,9 +2,9 @@ package ClientMsg
 
 import (
 	"go-min-chat/protobuf/proto"
-	"fmt"
+	"go-min-chat/Util"
 )
 
 func ShowRoom(backContent *protobuf.BackContent) {
-	fmt.Println(backContent.Showroom.RoomsAndIds)
+	Util.EchoLine(backContent.Showroom.RoomsAndIds, 1)
 }
