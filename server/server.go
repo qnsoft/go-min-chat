@@ -53,7 +53,6 @@ func recvConnMsg(conn net.Conn, ch chan []byte) {
 	buf := make([]byte, 50)
 Loop:
 	for {
-		fmt.Println("-----");
 		n, err := conn.Read(buf)
 		ret := Util.ConnReadCheckError(err, conn)
 		if (ret == 0) { // 读取时, 发生了错误
@@ -69,10 +68,7 @@ Loop:
 // 服务端发送消息
 func sendConnMsg(conn net.Conn, ch chan []byte) {
 	for {
-		fmt.Println("-----")
 		content, _ := <-ch
-		var ret string
 		Msg.DoAllMsg(conn, content)
-		fmt.Println(ret)
 	}
 }
