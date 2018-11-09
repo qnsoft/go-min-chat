@@ -81,8 +81,7 @@ func readFromStdio(ch chan []byte) {
 }
 
 func readFromConn(conn net.Conn) {
-	msg := make(chan []byte, 10)
-
+	msg := make(chan string, 10)
 	for {
 		select {
 		case msg1 := <-msg: // 从msg chan里面取数据
@@ -94,10 +93,9 @@ func readFromConn(conn net.Conn) {
 	}
 }
 
-func doMsg(buf []byte) {
+func doMsg(buf string) {
 	backContent := &protobuf.BackContent{}
-	proto.Unmarshal(buf, backContent)
-
+	proto.Unmarshal([]byte(buf), backContent)
 	switch backContent.Id {
 	case _const.RCV_FAIL:
 		Util.EchoLine(backContent.Msg, 2)

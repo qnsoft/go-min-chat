@@ -5,7 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"errors"
-	"time"
 	"github.com/beego/bee/logger/colors"
 	"strconv"
 )
@@ -57,12 +56,12 @@ func (b *Buffer) read(offset, n int) ([]byte) {
 
 //从reader里面读取数据，如果reader阻塞，会发生阻塞
 func (b *Buffer) readFromReader() (int, error) {
-	b.grow() // 有用的字节前移
 	n, err := b.reader.Read(b.buf[b.end:])
 	a := "读到了n: " + strconv.Itoa(n) + ", b.start: " + strconv.Itoa(b.start) + ", " + "b.end: " + strconv.Itoa(b.end)
 	fmt.Println(colors.Green(a))
 	if (err != nil) {
 		fmt.Println(err.Error())
+		panic(err.Error())
 		return n, err
 	}
 	b.end += n
@@ -70,31 +69,43 @@ func (b *Buffer) readFromReader() (int, error) {
 }
 
 // 读一个处理一个， todo 异步读
-func (buffer *Buffer) ThomasRead() ([]byte, error) {
+func (buffer *Buffer) ThomasRead(msg chan string) (error) {
 	for {
-		_, err := buffer.readFromReader()
+		buffer.grow()                     // 移动数据
+		_, err := buffer.readFromReader() // 读数据拼接到定额缓存后面
 		fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
 		if err != nil {
 			fmt.Println(err)
-			return []byte(""), err
+			return err
 		}
-		for {
-			headBuf, err := buffer.seek(HEAD_SIZE)
-			if err != nil {
-				break
-			}
-			contentSize := int(binary.BigEndian.Uint16(headBuf))
-			fmt.Println("contentSize:", contentSize);
-			if (buffer.len() >= contentSize-HEAD_SIZE) {
-				fmt.Println("一次读够了返回去")
-				contentBuf := buffer.read(HEAD_SIZE, contentSize)
-				fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
-				//buffer.start -= contentSize
-				return contentBuf, nil
-			}
-			fmt.Println("一次读的不够")
-			time.Sleep(1 * time.Second)
-			break
+		// 检查定额缓存里面的数据有几个消息(可能不到1个，可能连一个消息头都不够，可能有几个完整消息+一个消息的部分)
+		isBreak := buffer.checkMsg(msg)
+		if (isBreak) {
+			return nil
 		}
 	}
+}
+
+func (buffer *Buffer) checkMsg(msg chan string) (bool) {
+	var isBreak bool
+	fmt.Println("111")
+	headBuf, err1 := buffer.seek(HEAD_SIZE)
+	if err1 != nil { // 一个消息头都不够， 跳出去继续读吧
+		return false
+	}
+	contentSize := int(binary.BigEndian.Uint16(headBuf))
+	fmt.Println("contentSize:", contentSize);
+	if (buffer.len() >= contentSize-HEAD_SIZE) { // 一个消息体也是够的
+		fmt.Println("一次读够了返回去")
+		contentBuf := buffer.read(HEAD_SIZE, contentSize) // 把消息读出来，把start往后移
+		msg <- string(contentBuf)
+		fmt.Println("len(msg): ", len(msg))
+		fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
+		// 那么继续，看剩下的还够一个消息不
+		isBreak = true
+		buffer.checkMsg(msg)
+	} else { // 一个消息体不够的， 跳出去继续读吧
+		isBreak = false
+	}
+	return isBreak
 }
