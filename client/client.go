@@ -81,41 +81,51 @@ func readFromStdio(ch chan []byte) {
 }
 
 func readFromConn(conn net.Conn) {
+	msg := make(chan []byte, 10)
+
 	for {
-		//buf := make([]byte, 500)
-		//n, err := conn.Read(buf)
-		//Util.CheckError(err)
-		//backContent := &protobuf.BackContent{}
-		//proto.Unmarshal(buf[:n], backContent)
-
-		buffer := Network.NewBuffer(conn, 100)
-		buf, _ := buffer.ThomasRead()
-		backContent := &protobuf.BackContent{}
-		proto.Unmarshal(buf, backContent)
-
-		switch backContent.Id {
-		case _const.RCV_FAIL:
-			Util.EchoLine(backContent.Msg, 2)
-			break
-		case _const.RCV_SUCCESS:
-			Util.EchoLine(backContent.Msg, 1)
-			break
-		case _const.RCV_USE_ROOM:
-			ClientMsg.UseRoom(backContent)
-			break
-		case _const.RCV_AUTH:
-			ClientMsg.Auth(backContent)
-			break
-		case _const.RCV_SHOW_ROOMS:
-			ClientMsg.ShowRoom(backContent)
-			break
-		case _const.RCV_USER_LIST:
-			ClientMsg.UserList(backContent)
-			break
-		case _const.RCV_GROUP_MSG:
-			ClientMsg.GroupMsg(backContent)
-			break
+		select {
+		case msg1 := <-msg: // 从msg chan里面取数据
+			doMsg(msg1)
+		default: // 读到数据放到msg chan里面
+			buffer := Network.NewBuffer(conn, 100)
+			buffer.ThomasRead(msg)
 		}
+	}
+}
+
+func doMsg(buf []byte) {
+	backContent := &protobuf.BackContent{}
+	proto.Unmarshal(buf, backContent)
+
+	switch backContent.Id {
+	case _const.RCV_FAIL:
+		Util.EchoLine(backContent.Msg, 2)
 		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_SUCCESS:
+		Util.EchoLine(backContent.Msg, 1)
+		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_USE_ROOM:
+		ClientMsg.UseRoom(backContent)
+		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_AUTH:
+		ClientMsg.Auth(backContent)
+		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_SHOW_ROOMS:
+		ClientMsg.ShowRoom(backContent)
+		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_USER_LIST:
+		ClientMsg.UserList(backContent)
+		fmt.Print(ClientUtil.GetPre())
+		break
+	case _const.RCV_GROUP_MSG:
+		ClientMsg.GroupMsg(backContent)
+		fmt.Print(ClientUtil.GetPre())
+		break
 	}
 }
