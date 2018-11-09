@@ -72,25 +72,11 @@ func (b *Buffer) readFromReader() (int, error) {
 // 读一个处理一个， todo 异步读
 func (buffer *Buffer) ThomasRead() ([]byte, error) {
 	for {
-		// 每次进来的时候不能去读, 先检查一下已经读取的里面有没有一个完整的消息
-		if (buffer.end > 0 && buffer.start < buffer.end) {
-			headBuf, err := buffer.seek(HEAD_SIZE)
-			if err == nil { // 够头部了
-				contentSize1 := int(binary.BigEndian.Uint16(headBuf))
-				if (buffer.len() >= contentSize1-HEAD_SIZE) { // 够一个消息
-					contentBuf := buffer.read(HEAD_SIZE, contentSize1)
-					fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
-					//buffer.start -= contentSize
-					return contentBuf, nil
-				}
-			}
-		}
-
-		_, err1 := buffer.readFromReader()
+		_, err := buffer.readFromReader()
 		fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
-		if err1 != nil {
-			fmt.Println(err1)
-			return []byte(""), err1
+		if err != nil {
+			fmt.Println(err)
+			return []byte(""), err
 		}
 		for {
 			headBuf, err := buffer.seek(HEAD_SIZE)
@@ -111,5 +97,4 @@ func (buffer *Buffer) ThomasRead() ([]byte, error) {
 			break
 		}
 	}
-	return []byte(""), nil
 }
