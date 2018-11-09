@@ -6,6 +6,8 @@ import (
 	"github.com/golang/protobuf/proto"
 	"fmt"
 	"go-min-chat/const"
+	"encoding/binary"
+	"bytes"
 )
 
 func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {
@@ -16,7 +18,15 @@ func SendBackMessage(conn net.Conn, id int32, msgType int32, param string) {
 }
 
 func SendMessage(conn net.Conn, data []byte) {
-	n, err := conn.Write(data)
+	headSize := len(data)
+	var headBytes = make([]byte, 2)
+	binary.BigEndian.PutUint16(headBytes, uint16(headSize))
+	var buffer bytes.Buffer
+
+	buffer.Write(headBytes)
+	buffer.Write(data)
+	b3 := buffer.Bytes() //得到了b1+b2的结果
+	n, err := conn.Write(b3)
 	fmt.Println("data send leng:", n, err)
 }
 

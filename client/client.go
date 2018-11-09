@@ -15,6 +15,7 @@ import (
 	"go-min-chat/ClientMsg"
 	"go-min-chat/ClientUtil"
 	"go-min-chat/ClientApp"
+	"go-min-chat/Network"
 )
 
 func main() {
@@ -81,11 +82,17 @@ func readFromStdio(ch chan []byte) {
 
 func readFromConn(conn net.Conn) {
 	for {
-		buf := make([]byte, 500)
-		n, err := conn.Read(buf)
-		Util.CheckError(err)
+		//buf := make([]byte, 500)
+		//n, err := conn.Read(buf)
+		//Util.CheckError(err)
+		//backContent := &protobuf.BackContent{}
+		//proto.Unmarshal(buf[:n], backContent)
+
+		buffer := Network.NewBuffer(conn, 100)
+		buf, _ := buffer.ThomasRead()
 		backContent := &protobuf.BackContent{}
-		proto.Unmarshal(buf[:n], backContent)
+		proto.Unmarshal(buf, backContent)
+
 		switch backContent.Id {
 		case _const.RCV_FAIL:
 			Util.EchoLine(backContent.Msg, 2)
