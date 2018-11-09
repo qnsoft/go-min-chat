@@ -61,7 +61,6 @@ Loop:
 			break Loop
 		}
 		ch <- buf[:n]
-		fmt.Println(string(buf[0:n]))
 	}
 }
 

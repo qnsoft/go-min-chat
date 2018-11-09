@@ -38,4 +38,3 @@ func DoAllMsg(conn net.Conn, msgContent []byte) {
 	}
 
 }
-

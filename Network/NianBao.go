@@ -5,8 +5,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"errors"
-	"github.com/beego/bee/logger/colors"
-	"strconv"
 )
 
 const HEAD_SIZE = 2
@@ -57,8 +55,6 @@ func (b *Buffer) read(offset, n int) ([]byte) {
 //从reader里面读取数据，如果reader阻塞，会发生阻塞
 func (b *Buffer) readFromReader() (int, error) {
 	n, err := b.reader.Read(b.buf[b.end:])
-	a := "读到了n: " + strconv.Itoa(n) + ", b.start: " + strconv.Itoa(b.start) + ", " + "b.end: " + strconv.Itoa(b.end)
-	fmt.Println(colors.Green(a))
 	if (err != nil) {
 		fmt.Println(err.Error())
 		panic(err.Error())
@@ -73,7 +69,6 @@ func (buffer *Buffer) ThomasRead(msg chan string) (error) {
 	for {
 		buffer.grow()                     // 移动数据
 		_, err := buffer.readFromReader() // 读数据拼接到定额缓存后面
-		fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
 		if err != nil {
 			fmt.Println(err)
 			return err
@@ -88,19 +83,14 @@ func (buffer *Buffer) ThomasRead(msg chan string) (error) {
 
 func (buffer *Buffer) checkMsg(msg chan string) (bool) {
 	var isBreak bool
-	fmt.Println("111")
 	headBuf, err1 := buffer.seek(HEAD_SIZE)
 	if err1 != nil { // 一个消息头都不够， 跳出去继续读吧
 		return false
 	}
 	contentSize := int(binary.BigEndian.Uint16(headBuf))
-	fmt.Println("contentSize:", contentSize);
 	if (buffer.len() >= contentSize-HEAD_SIZE) { // 一个消息体也是够的
-		fmt.Println("一次读够了返回去")
 		contentBuf := buffer.read(HEAD_SIZE, contentSize) // 把消息读出来，把start往后移
 		msg <- string(contentBuf)
-		fmt.Println("len(msg): ", len(msg))
-		fmt.Println("b.start:", buffer.start, ", ", "b.end", buffer.end)
 		// 那么继续，看剩下的还够一个消息不
 		isBreak = true
 		buffer.checkMsg(msg)
