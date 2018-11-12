@@ -10,11 +10,13 @@ import (
 	"go-min-chat/Msg"
 	"flag"
 	"github.com/beego/bee/logger/colors"
+	"go-min-chat/cache"
 )
 
 func init() {
 	MinChatSer := ser.GetMinChatSer()
 	DB := mysql.GetDB()
+	Redis := cache.GetReis()
 	ini_parser := Utils.IniParser{}
 	conf_file_name := "conf.ini"
 	if err := ini_parser.Load("../conf/conf.ini"); err != nil {
@@ -22,6 +24,7 @@ func init() {
 		return
 	}
 
+	// mysql
 	DB.Ip = ini_parser.GetString("mysql", "Ip")
 	DB.Username = ini_parser.GetString("mysql", "Username")
 	DB.Password = ini_parser.GetString("mysql", "Password")
@@ -32,6 +35,15 @@ func init() {
 	DB.MaxIdleConns = int(ini_parser.GetInt32("mysql", "MaxIdleConns"))
 	mysql.InitDB()
 
+	// redis
+	Redis.Ip = ini_parser.GetString("redis", "Ip")
+	Redis.Port = int(ini_parser.GetInt32("redis", "Port"))
+	cache.InitCache()
+	//Redis.Set("name", "wang")
+	//Redis.Sadd("room1", "wang")
+	//Redis.Sismember("room1", "wang")
+
+	// server
 	MinChatSer.Host = ini_parser.GetString("test", "Ip")
 	MinChatSer.Port = int(ini_parser.GetInt32("test", "Port"))
 	flag.StringVar(&MinChatSer.Host, "h", MinChatSer.Host, "is port")
