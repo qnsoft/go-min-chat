@@ -22,7 +22,6 @@ func SendMessage(conn net.Conn, data []byte) {
 	var headBytes = make([]byte, 2)
 	binary.BigEndian.PutUint16(headBytes, uint16(headSize))
 	var buffer bytes.Buffer
-
 	buffer.Write(headBytes)
 	buffer.Write(data)
 	b3 := buffer.Bytes() //得到了b1+b2的结果

@@ -87,7 +87,7 @@ func readFromConn(conn net.Conn) {
 		case msg1 := <-msg: // 从msg chan里面取数据
 			doMsg(msg1)
 		default: // 读到数据放到msg chan里面
-			buffer := Network.NewBuffer(conn, 100)
+			buffer := Network.NewBuffer(conn, 1024)
 			buffer.ThomasRead(msg)
 		}
 	}

@@ -34,5 +34,6 @@ func ShowRooms(conn net.Conn) {
 	sR.RoomsAndIds = innerRet
 	p1.Showroom = sR
 	data, _ := proto.Marshal(p1)
+	fmt.Println("data: length :", len(data))
 	SendMessage(conn, data)
 }
