@@ -5,6 +5,7 @@ import (
 	"fmt"
 	redis2 "github.com/garyburd/redigo/redis"
 	"strconv"
+	"reflect"
 )
 
 //Db数据库连接池
@@ -44,7 +45,7 @@ func (redis Redis) Get(key string) interface{} {
 	return v
 }
 
-func (redis Redis) Set(key string, value string) {
+func (redis Redis) Set(key interface{}, value interface{}) {
 	v, err := redis.Conn.Do("SET", key, value)
 	if err != nil {
 		fmt.Println("redis get failed:", err)
@@ -54,17 +55,29 @@ func (redis Redis) Set(key string, value string) {
 }
 
 func (redis Redis) Sadd(key string, value string) {
-	_, err := redis.Conn.Do("sadd", "key", value)
+	_, err := redis.Conn.Do("sadd", key, value)
 	if err != nil {
 		fmt.Println("set add failed", err.Error())
 	}
 }
 
-func (redis Redis) Sismember(key string, value string) {
+func (redis Redis) Sismember(key string, value string) interface{} {
 	isMember, err := redis.Conn.Do("sismember", key, value)
 	if err != nil {
 		fmt.Println("sismember get failed", err.Error())
 	} else {
 		fmt.Println("foo is or not myset's member", isMember)
 	}
+	return isMember
+}
+
+func (redis Redis) Incr(key string) int {
+	incr, err := redis.Conn.Do("incr", key)
+	if err != nil {
+		fmt.Println("sismember get failed", err.Error())
+	} else {
+		fmt.Println("foo is or not myset's member", incr)
+	}
+	fmt.Println(reflect.TypeOf(incr))
+	return int(incr.(int64))
 }

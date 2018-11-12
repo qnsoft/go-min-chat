@@ -42,6 +42,7 @@ func init() {
 	//Redis.Set("name", "wang")
 	//Redis.Sadd("room1", "wang")
 	//Redis.Sismember("room1", "wang")
+	//Redis.Incr("age")
 
 	// server
 	MinChatSer.Host = ini_parser.GetString("test", "Ip")
