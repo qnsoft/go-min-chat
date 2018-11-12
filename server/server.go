@@ -13,12 +13,23 @@ import (
 
 func init() {
 	MinChatSer := ser.GetMinChatSer()
+	DB := mysql.GetDB()
 	ini_parser := Utils.IniParser{}
 	conf_file_name := "conf.ini"
 	if err := ini_parser.Load("../conf/conf.ini"); err != nil {
 		fmt.Printf("try load config file[%s] error[%s]\n", conf_file_name, err.Error())
 		return
 	}
+
+	DB.Ip = ini_parser.GetString("mysql", "Ip")
+	DB.Username = ini_parser.GetString("mysql", "Username")
+	DB.Password = ini_parser.GetString("mysql", "Password")
+	DB.DbName = ini_parser.GetString("mysql", "DbName")
+	DB.Charset = ini_parser.GetString("mysql", "Charset")
+	DB.Port = int(ini_parser.GetInt32("mysql", "Port"))
+	DB.MaxLifeTime = int(ini_parser.GetInt32("mysql", "MaxLifeTime"))
+	DB.MaxIdleConns = int(ini_parser.GetInt32("mysql", "MaxIdleConns"))
+
 	MinChatSer.Host = ini_parser.GetString("test", "ip")
 	MinChatSer.Port = int(ini_parser.GetInt32("test", "port"))
 	flag.StringVar(&MinChatSer.Host, "h", MinChatSer.Host, "is port")
@@ -51,14 +62,13 @@ func main() {
 // 服务端接受消息
 func recvConnMsg(conn net.Conn, ch chan []byte) {
 	buf := make([]byte, 50)
-Loop:
 	for {
 		n, err := conn.Read(buf)
 		ret := Utils.ConnReadCheckError(err, conn)
 		if (ret == 0) { // 读取时, 发生了错误
 			os.Exit(1)
 		} else if (ret == -1) { // 客户端断开了连接
-			break Loop
+			continue
 		}
 		ch <- buf[:n]
 	}
