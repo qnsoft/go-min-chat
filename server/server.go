@@ -21,9 +21,7 @@ func init() {
 	}
 	MinChatSer.Host = ini_parser.GetString("test", "ip")
 	MinChatSer.Port = int(ini_parser.GetInt32("test", "port"))
-
 	flag.StringVar(&MinChatSer.Host, "h", MinChatSer.Host, "is port")
-
 	flag.IntVar(&MinChatSer.Port, "p", MinChatSer.Port, "is port")
 	flag.Parse()
 }
