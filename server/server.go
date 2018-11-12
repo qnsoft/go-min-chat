@@ -29,9 +29,10 @@ func init() {
 	DB.Port = int(ini_parser.GetInt32("mysql", "Port"))
 	DB.MaxLifeTime = int(ini_parser.GetInt32("mysql", "MaxLifeTime"))
 	DB.MaxIdleConns = int(ini_parser.GetInt32("mysql", "MaxIdleConns"))
+	mysql.InitDB()
 
-	MinChatSer.Host = ini_parser.GetString("test", "ip")
-	MinChatSer.Port = int(ini_parser.GetInt32("test", "port"))
+	MinChatSer.Host = ini_parser.GetString("test", "Ip")
+	MinChatSer.Port = int(ini_parser.GetInt32("test", "Port"))
 	flag.StringVar(&MinChatSer.Host, "h", MinChatSer.Host, "is port")
 	flag.IntVar(&MinChatSer.Port, "p", MinChatSer.Port, "is port")
 	flag.Parse()

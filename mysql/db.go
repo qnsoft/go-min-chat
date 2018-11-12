@@ -9,22 +9,9 @@ import (
 	"strconv"
 )
 
-//数据库配置
-const (
-	userName = "root"
-	password = "WOAImama188"
-	ip       = "127.0.0.1"
-	port     = "3306"
-	dbName   = "thomas"
-)
-
 //Db数据库连接池
 var DB1 *DB
 var once sync.Once
-
-var path = strings.Join([]string{userName, ":",
-	password, "@tcp(", ip, ":", port, ")/",
-	dbName, "?charset=utf8"}, "")
 
 type DB struct {
 	Ip           string
@@ -35,6 +22,7 @@ type DB struct {
 	Charset      string
 	MaxLifeTime  int
 	MaxIdleConns int
+	Socket       *sql.DB
 }
 
 func GetDB() *DB {
@@ -54,10 +42,10 @@ func InitDB() *sql.DB {
 	//fmt.Println(path)
 	//os.Exit(1)
 	//设置数据库最大连接数
-
 	DB1.SetConnMaxLifetime(100)
 	//设置上数据库最大闲置连接数
 	DB1.SetMaxIdleConns(DB.MaxIdleConns)
+	DB.Socket = DB1
 	//验证连接
 	if err := DB1.Ping(); err != nil {
 		fmt.Println("opon database fail")
