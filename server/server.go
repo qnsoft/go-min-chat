@@ -9,6 +9,7 @@ import (
 	"go-min-chat/Utils"
 	"go-min-chat/Msg"
 	"flag"
+	"github.com/beego/bee/logger/colors"
 )
 
 func init() {
@@ -38,14 +39,22 @@ func init() {
 	flag.Parse()
 }
 
+const log = `                               _                    _             _
+  __ _   ___        _ __ ___  (_) _ __         ___ | |__    __ _ | |_
+ / _\ | / _ \  ___ | '_ \ _ \ | || '_ \  ___  / __|| '_ \  / _\ || __|
+| (_| || (_) ||___|| | | | | || || | | ||___|| (__ | | | || (_| || |_
+ \__, | \___/      |_| |_| |_||_||_| |_|      \___||_| |_| \__,_| \__|
+ |___/
+一个分布式聊天系统
+`
+
 func main() {
 	MinChatSer := ser.GetMinChatSer()
 	addr := fmt.Sprintf("%s:%d", MinChatSer.Host, MinChatSer.Port)
-	fmt.Println(addr)
 	listen, err := net.Listen("tcp", addr)
 	Utils.CheckError(err)
 	defer listen.Close()
-	fmt.Println("Ready to accept connections")
+	fmt.Println(colors.Red(log))
 	var u *mysql.User
 	for {
 		newConn, err := listen.Accept()
