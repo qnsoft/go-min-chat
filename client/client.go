@@ -11,7 +11,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"strings"
 	"go-min-chat/const"
-	"go-min-chat/Util"
+	"go-min-chat/Utils"
 	"go-min-chat/ClientMsg"
 	"go-min-chat/ClientUtil"
 	"go-min-chat/ClientApp"
@@ -28,7 +28,7 @@ func main() {
 	conn, err := net.Dial("tcp", fmt.Sprintf("%s:%s", cliSing.Host, cliSing.Port))
 
 	// 啥也不干, 想登录判断
-	Util.CheckError(err)
+	Utils.CheckError(err)
 	defer conn.Close()
 	fmt.Print(ClientUtil.GetPre())
 	var wg sync.WaitGroup
@@ -62,7 +62,7 @@ func readFromStdio(ch chan []byte) {
 		reader := bufio.NewReader(os.Stdin)
 		data, _, _ := reader.ReadLine()
 		if (!ClientApp.GetCli().IsAuth) { // 没有登录
-			Util.EchoLine("请先登录", 2)
+			Utils.EchoLine("请先登录", 2)
 			continue
 		}
 		data = []byte(strings.Trim(string(data), " "))
@@ -98,11 +98,11 @@ func doMsg(buf string) {
 	proto.Unmarshal([]byte(buf), backContent)
 	switch backContent.Id {
 	case _const.RCV_FAIL:
-		Util.EchoLine(backContent.Msg, 2)
+		Utils.EchoLine(backContent.Msg, 2)
 		fmt.Print(ClientUtil.GetPre())
 		break
 	case _const.RCV_SUCCESS:
-		Util.EchoLine(backContent.Msg, 1)
+		Utils.EchoLine(backContent.Msg, 1)
 		fmt.Print(ClientUtil.GetPre())
 		break
 	case _const.RCV_USE_ROOM:

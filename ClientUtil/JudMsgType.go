@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"go-min-chat/protobuf/proto"
 	"go-min-chat/ClientApp"
-	"go-min-chat/Util"
+	"go-min-chat/Utils"
 )
 
 func One(param []string) (int, bool) {
@@ -37,13 +37,13 @@ func GetMsgType(param []string) (bool, *protobuf.Content) {
 	param_leg := len(param)
 	var isContinue bool
 	if param_leg >= 3 {
-		p := Util.SliceUp(param[:2], " ")
+		p := Utils.SliceUp(param[:2], " ")
 		if (strings.EqualFold(p, "CREATE ROOM")) {
 			p1.Id = _const.RCV_CREATE_ROOM
 			p1.ParamString = strings.Join(param[2:], ",")
 		}
 	} else if param_leg == 2 {
-		p := Util.SliceUp(param[:2], " ")
+		p := Utils.SliceUp(param[:2], " ")
 		if (strings.EqualFold(p, "SHOW ROOMS")) {
 			p1.Id = _const.RCV_SHOW_ROOMS
 		} else if (p == "USER LIST") {
@@ -66,7 +66,7 @@ func GetMsgType(param []string) (bool, *protobuf.Content) {
 			p1.ParamString = param[0]
 		} else {
 			isContinue = true
-			Util.EchoLine("(error) ERR unknown command `"+strings.Join(param, " ")+"`", 2)
+			Utils.EchoLine("(error) ERR unknown command `"+strings.Join(param, " ")+"`", 2)
 		}
 	}
 	return isContinue, p1

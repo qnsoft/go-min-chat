@@ -73,7 +73,7 @@ func GetAllCommand(param []string) (int, interface{}) {
 	//			msgId = RCV_UNKNOW
 	//		} else {
 	//			isContinue = false
-	//			Util.EchoLine("(error) ERR " + strings.Join(param, " ")+
+	//			Utils.EchoLine("(error) ERR " + strings.Join(param, " ")+
 	//				" command missing parameter", 2)
 	//			fmt.Printf(ClientUtil.GetPre())
 	//		}
@@ -94,7 +94,7 @@ func GetAllCommand(param []string) (int, interface{}) {
 	//			msgId = RCV_UNKNOW
 	//		} else {
 	//			isContinue = false
-	//			Util.EchoLine("(error) ERR " + strings.Join(param, " ")+
+	//			Utils.EchoLine("(error) ERR " + strings.Join(param, " ")+
 	//				" command missing parameter", 2)
 	//			fmt.Printf(ClientUtil.GetPre())
 	//		}

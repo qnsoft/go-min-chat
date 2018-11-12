@@ -2,13 +2,13 @@ package ClientMsg
 
 import (
 	"net"
-	"go-min-chat/Util"
+	"go-min-chat/Utils"
 )
 
 func Send(conn net.Conn, ch chan []byte) {
 	for {
 		content, _ := <-ch
 		_, err := conn.Write(content)
-		Util.CheckError(err)
+		Utils.CheckError(err)
 	}
 }

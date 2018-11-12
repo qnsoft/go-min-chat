@@ -4,36 +4,38 @@ import (
 	"net"
 	"fmt"
 	"os"
-	"flag"
 	"go-min-chat/server/ser"
 	"go-min-chat/mysql"
-	"go-min-chat/Util"
+	"go-min-chat/Utils"
 	"go-min-chat/Msg"
+	"flag"
 )
 
-type Server struct {
-	host string
-	port int
-}
-
-var S *Server
-
 func init() {
-	var host string
-	flag.StringVar(&host, "h", "127.0.0.1", "is port")
-	var port int
-	flag.IntVar(&port, "p", 8080, "is port")
+	MinChatSer := ser.GetMinChatSer()
+	ini_parser := Utils.IniParser{}
+	conf_file_name := "conf.ini"
+	if err := ini_parser.Load("../conf/conf.ini"); err != nil {
+		fmt.Printf("try load config file[%s] error[%s]\n", conf_file_name, err.Error())
+		return
+	}
+	MinChatSer.Host = ini_parser.GetString("test", "ip")
+	MinChatSer.Port = int(ini_parser.GetInt32("test", "port"))
+
+	flag.StringVar(&MinChatSer.Host, "h", MinChatSer.Host, "is port")
+
+	flag.IntVar(&MinChatSer.Port, "p", MinChatSer.Port, "is port")
 	flag.Parse()
-	S = &Server{host, port}
 }
 
 func main() {
-	addr := fmt.Sprintf("%s:%d", S.host, S.port)
+	MinChatSer := ser.GetMinChatSer()
+	addr := fmt.Sprintf("%s:%d", MinChatSer.Host, MinChatSer.Port)
+	fmt.Println(addr)
 	listen, err := net.Listen("tcp", addr)
-	Util.CheckError(err)
+	Utils.CheckError(err)
 	defer listen.Close()
 	fmt.Println("Ready to accept connections")
-	MinChatSer := ser.GetMinChatSer()
 	var u *mysql.User
 	for {
 		newConn, err := listen.Accept()
@@ -41,7 +43,7 @@ func main() {
 		u = mysql.BuildUser(0, "", 0, false)
 		MinChatSer.AllUser[newConn] = u
 		fmt.Println(newConn.RemoteAddr())
-		Util.CheckError(err)
+		Utils.CheckError(err)
 		ch := make(chan []byte)
 		go recvConnMsg(newConn, ch)
 		go sendConnMsg(newConn, ch)
@@ -54,7 +56,7 @@ func recvConnMsg(conn net.Conn, ch chan []byte) {
 Loop:
 	for {
 		n, err := conn.Read(buf)
-		ret := Util.ConnReadCheckError(err, conn)
+		ret := Utils.ConnReadCheckError(err, conn)
 		if (ret == 0) { // 读取时, 发生了错误
 			os.Exit(1)
 		} else if (ret == -1) { // 客户端断开了连接

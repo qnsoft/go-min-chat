@@ -3,7 +3,7 @@ package ClientMsg
 import (
 	"go-min-chat/protobuf/proto"
 	"go-min-chat/ClientApp"
-	"go-min-chat/Util"
+	"go-min-chat/Utils"
 	"os"
 	"go-min-chat/const"
 	"github.com/golang/protobuf/proto"
@@ -15,9 +15,9 @@ func Auth(backContent *protobuf.BackContent) {
 	if (backContent.Auth.IsOk) { // 登录成功
 		cli1.Nick = backContent.Auth.UseInfo.Nick
 		cli1.Uid = backContent.Auth.UseInfo.Uid
-		Util.EchoLine("OK", 1)
+		Utils.EchoLine("OK", 1)
 	} else { // 登录失败 or 需要去登录
-		Util.EchoLine(backContent.Auth.Msg, 2)
+		Utils.EchoLine(backContent.Auth.Msg, 2)
 		os.Exit(1)
 	}
 }
