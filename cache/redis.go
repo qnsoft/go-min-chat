@@ -54,7 +54,7 @@ func (redis Redis) Set(key interface{}, value interface{}) {
 	}
 }
 
-func (redis Redis) Sadd(key string, value string) {
+func (redis Redis) Sadd(key string, value interface{}) {
 	_, err := redis.Conn.Do("sadd", key, value)
 	if err != nil {
 		fmt.Println("set add failed", err.Error())
