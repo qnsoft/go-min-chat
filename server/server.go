@@ -38,19 +38,10 @@ func init() {
 	// redis
 	Redis.Ip = ini_parser.GetString("redis", "Ip")
 	Redis.Port = int(ini_parser.GetInt32("redis", "Port"))
+	Redis.Db = int(ini_parser.GetInt32("redis", "Db"))
 	cache.InitCache()
-	//Redis.Set("name", "wang")
-	//Redis.Sadd("room1", "wang")
-	//Redis.Sismember("room1", "wang")
-	//Redis.Set("RoomBegin", 10000)
-	//Redis.Set("wang", 18)
-	//a := Redis.Get("wang")
-	//b := string(a.([]uint8))
-	//fmt.Println("reflect.TypeOf(a): ", reflect.TypeOf(a))
-	//fmt.Println("reflect.TypeOf(b): ", reflect.TypeOf(b))
-	//c, err1 := strconv.Atoi(b)
-	//fmt.Println("a:", c, err1)
-	//os.Exit(1)
+	Redis.Conn.FlushAll() // 调试阶段清空redis
+
 	// server
 	MinChatSer.Host = ini_parser.GetString("test", "Ip")
 	MinChatSer.Port = int(ini_parser.GetInt32("test", "Port"))

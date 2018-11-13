@@ -4,6 +4,8 @@ import (
 	"net"
 	"go-min-chat/server/ser"
 	"fmt"
+	"go-min-chat/cache"
+	"strconv"
 	"strings"
 )
 
@@ -21,14 +23,16 @@ func UserList(conn net.Conn) {
 		return
 	}
 	fmt.Println("roomName:", u.RoomName, "roomId:", u.RoomId)
-	allUser := MinChatSer.AllRoomKeyRoomId[u.RoomId].AllUser
-	fmt.Println(allUser)
+	redis := cache.GetReis().Conn
+	a, _ := redis.SMembers("Set:RoomName:" + u.RoomName).Result()
+	fmt.Println("a:", a)
 	var allUserStr string
-	for _, v := range allUser {
-		if (u == v) { // 如果是自己就加个*
-			allUserStr += v.Nick + "(*)\n"
+	for _, v := range a {
+		b, _ := strconv.Atoi(v)
+		if (u.Uid == b) { // 如果是自己就加个*
+			allUserStr += u.Nick + "(*)\n"
 		} else {
-			allUserStr += v.Nick + "\n"
+			allUserStr += u.Nick + "\n"
 		}
 	}
 	SendSuccessMessage(conn, strings.TrimSuffix(allUserStr, "\n"))

@@ -16,10 +16,9 @@ func UseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 	MinChatSer := ser.GetMinChatSer()
 	user := MinChatSer.AllUser[conn]
 	key := "RoomName:" + rcvContent.ParamString
-	redis := cache.GetReis()
-	a := redis.Get(key)
-	b := string(a.([]uint8))
-	value, _ := strconv.Atoi(b)
+	redis := cache.GetReis().Conn
+	a, _ := redis.Get(key).Result()
+	value, _ := strconv.Atoi(a)
 	fmt.Println("reflect.TypeOf(value)", reflect.TypeOf(value))
 	fmt.Println("value", value)
 	if value != 0 {
@@ -28,7 +27,7 @@ func UseRoom(conn net.Conn, rcvContent *protobuf.Content) {
 		} else { // 不在当前房间
 			user.RoomName = rcvContent.ParamString
 			user.RoomId = value
-			redis.Sadd("RoomName:"+rcvContent.ParamString, user.Uid)
+			redis.SAdd("Set:RoomName:"+rcvContent.ParamString, user.Uid)
 			p1 := &protobuf.BackContent{}
 			room1 := &protobuf.Room{}
 			room1.RoomId = int32(value)

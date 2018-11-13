@@ -14,17 +14,17 @@ func CreateRooms(conn net.Conn, rcvContent *protobuf.Content) {
 	var allRoomKey string = "AllRoom"
 	var success_room []string
 	var fail_room []string
-	redis := cache.GetReis()
+	redis := cache.GetReis().Conn
 	//todo 事务， 多条命令一起执行
 	for _, roomName := range rooms {
-		iSmember := redis.Sismember(allRoomKey, roomName)
-		if (iSmember == 1) { // 存在房间了
+		iSmember, _ := redis.SIsMember(allRoomKey, roomName).Result()
+		if (iSmember) { // 存在房间了
 			fail_room = append(fail_room, roomName)
 		} else {
-			incr := redis.Incr("RoomId")
-			redis.Sadd(allRoomKey, roomName)
-			redis.Set("RoomName:"+roomName, incr)
-			redis.Set("RoomId:"+strconv.Itoa(incr), roomName)
+			incr, _ := redis.Incr("RoomId").Result()
+			redis.SAdd(allRoomKey, roomName)
+			redis.Set("RoomName:"+roomName, incr, 0)
+			redis.Set("RoomId:"+strconv.Itoa(int(incr)), roomName, 0)
 			success_room = append(success_room, roomName)
 		}
 	}
