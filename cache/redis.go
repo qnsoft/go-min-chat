@@ -25,8 +25,7 @@ func GetReis() *Redis {
 	return redis
 }
 
-func InitCache() {
-	redis := GetReis()
+func (redis *Redis) InitCache() {
 	client := redis2.NewClient(&redis2.Options{
 		Addr:     redis.Ip + ":" + strconv.Itoa(redis.Port),
 		Password: "",
@@ -36,4 +35,8 @@ func InitCache() {
 	pong, err := client.Ping().Result()
 	fmt.Println(pong, err)
 	redis.Conn = client
+}
+
+func Get()  {
+	
 }

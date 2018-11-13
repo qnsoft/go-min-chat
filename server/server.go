@@ -39,7 +39,7 @@ func init() {
 	Redis.Ip = ini_parser.GetString("redis", "Ip")
 	Redis.Port = int(ini_parser.GetInt32("redis", "Port"))
 	Redis.Db = int(ini_parser.GetInt32("redis", "Db"))
-	cache.InitCache()
+	Redis.InitCache()
 	Redis.Conn.FlushAll() // 调试阶段清空redis
 
 	// server
