@@ -1,7 +1,7 @@
 # go-min-chat
 
 ## 架构图
-![go-min-chat架构图.png](https://i.loli.net/2018/11/14/5beb94ce2fcf1.png)
+![go-min-chat架构图.png](https://i.loli.net/2018/11/14/5bebeb10cb71e.png)
 
 ## 使用方法
 cd go-min-chat/server/
